@@ -20,6 +20,7 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
+
 public class SimpleDocument {
 
     public static void main(String[] args) throws Exception {
@@ -55,22 +56,51 @@ public class SimpleDocument {
             System.out.println(gcAdd2);
             System.out.println(gcPhone);
 
-            boolean notComplete = true;
-            do {
-                System.out.println("Please enter Category, followed by Sub-Category, followed by the number of submittals in that category, filepaths of each submittal in that category, " +
+
+                System.out.println("Please enter Category, followed by Sub-Category, filepaths of each submittal in that category, " +
                         "and repeat for all needed Sub-Categories and submittals. Use stop to finish the Category.");
-                String mainCat = scanner.nextLine();
-                String subCat = scanner.nextLine();
-                int subNum = scanner.nextInt();
-                String[] subs = new String[subNum];
-                for(int i = 0; i < subNum; i++) {
-                    String subFile = scanner.nextLine();
-                    subs[i] = subFile;
+
+                TreeNode<String> root = new TreeNode<String>("root");
+                TreeNode<String> curNode = root;
+                String input = "";
+
+                input = scanner.nextLine();
+
+                while(!input.equals("stop")) {
+
+
+                    curNode = root.addChild(input);
+                    input = scanner.nextLine();
+
+                    while(!input.equals("stop")) {
+
+                        curNode = curNode.addChild(input);
+                        input = scanner.nextLine();
+
+                        while(!input.equals("stop"))  {
+
+                            curNode.addChild(input);
+                            input = scanner.nextLine();
+
+                        }
+
+                        curNode = curNode.parent;
+                        input = scanner.nextLine();
+                    }
+
+                    curNode = curNode.parent;
+                    input = scanner.nextLine();
                 }
 
 
 
-            } while (notComplete);
+
+                for (TreeNode<String> node : root) {
+                    String indent = SampleIterating.createIndent(node.getLevel());
+                    System.out.println(indent + node.data);
+                }
+
+
 
             try (FileOutputStream out = new FileOutputStream("simple1.docx")) {
                 doc.write(out);
