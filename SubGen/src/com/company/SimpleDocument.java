@@ -1,12 +1,32 @@
 package com.company;
 
 import java.io.FileOutputStream;
-
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import org.apache.poi.xwpf.usermodel.Borders;
 import org.apache.poi.xwpf.usermodel.BreakClear;
@@ -21,100 +41,123 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.util.Units;
+import javafx.application.*;
 
-public class SimpleDocument {
+import static java.lang.String.valueOf;
+import static javafx.application.Application.launch;
+
+public class SimpleDocument extends Application {
+    private static String job;
+    private static String jobAdd1;
+    private static String jobAdd2;
+    private static String architectName;
+    private static String architectAdd1;
+    private static String architectAdd2;
+    private static String architectPhone;
+    private static String genConName;
+    private static String genConAdd1;
+    private static String genConAdd2;
+    private static String genConPhone;
 
     public static void main(String[] args) throws Exception {
+        launch(args);
 
-        //String filePath = "C:\\Users\\Rudy\\Desktop\\SubmittalTemplate.docx";
         try {
+
 
             XWPFDocument doc = new XWPFDocument();
 
             Scanner scanner = new Scanner(System.in);
 
-            System.out.println("Please enter job name, then address part one, and address part two:");
-            String job = scanner.nextLine();
-            String jobAdd1 = scanner.nextLine();
-            String jobAdd2 = scanner.nextLine();
+            /*System.out.println("Please enter job name, then address part one, and address part two:");
+            String job = "Acworth Community Center";//scanner.nextLine();
+            String jobAdd1 = "1234 Somewhere Street";//scanner.nextLine();
+            String jobAdd2 = "Acworth, Georgia 33333";//scanner.nextLine();
 
             System.out.println("Please enter Architect name, then address part one, address part two, and phone number:");
-            String archName = scanner.nextLine();
-            String archAdd1 = scanner.nextLine();
-            String archAdd2 = scanner.nextLine();
-            String archPhone = scanner.nextLine();
+            String archName = "Peacock Architects";//scanner.nextLine();
+            String archAdd1 = "4322 Wherever Road";//scanner.nextLine();
+            String archAdd2 = "Atlanta, Georgia 44455";//scanner.nextLine();
+            String archPhone = "770-555-4444";//scanner.nextLine();
 
             System.out.println("Please enter General Contractor name, then address part one, address part two, and phone number:");
-            String gcName = scanner.nextLine();
-            String gcAdd1 = scanner.nextLine();
-            String gcAdd2 = scanner.nextLine();
-            String gcPhone = scanner.nextLine();
+            String gcName = "Brasfield & Gorrie";//scanner.nextLine();
+            String gcAdd1 = "5678 About Drive";//scanner.nextLine();
+            String gcAdd2 = "Atlanta, Georgia 88775";//scanner.nextLine();
+            String gcPhone = "555-444-3333";//scanner.nextLine();*/
 
 
-                System.out.println("Please enter Category, followed by Sub-Category, filepaths of each submittal in that category, " +
-                        "and repeat for all needed Sub-Categories and submittals. Use stop to finish the Category.");
+            System.out.println("Please enter Category, followed by Sub-Category, filepaths of each submittal in that category, " +
+                    "and repeat for all needed Sub-Categories and submittals. Use stop to finish the Category.");
 
-                TreeNode<String> root = new TreeNode<String>("root");
-                TreeNode<String> curNode = root;
-                String input = "";
+            TreeNode<String> root = new TreeNode<String>("root");
+            TreeNode<String> curNode = root;
+            String input = "";
 
+            input = scanner.nextLine();
+
+            while (!input.equals("stop")) {
+
+
+                curNode = root.addChild(input);
                 input = scanner.nextLine();
 
-                while(!input.equals("stop")) {
+                while (!input.equals("stop")) {
 
-
-                    curNode = root.addChild(input);
+                    curNode = curNode.addChild(input);
                     input = scanner.nextLine();
 
-                    while(!input.equals("stop")) {
+                    while (!input.equals("stop")) {
 
-                        curNode = curNode.addChild(input);
+                        curNode.addChild(input);
                         input = scanner.nextLine();
 
-                        while(!input.equals("stop"))  {
-
-                            curNode.addChild(input);
-                            input = scanner.nextLine();
-
-                        }
-
-                        curNode = curNode.parent;
-                        input = scanner.nextLine();
                     }
 
                     curNode = curNode.parent;
                     input = scanner.nextLine();
                 }
 
+                curNode = curNode.parent;
+                input = scanner.nextLine();
+            }
 
 
-
-                for (TreeNode<String> node : root) {
-                    String indent = SampleIterating.createIndent(node.getLevel());
-                    System.out.println(indent + node.data);
-                }
+            for (TreeNode<String> node : root) {
+                String indent = SampleIterating.createIndent(node.getLevel());
+                System.out.println(indent + node.data);
+            }
 
             XWPFParagraph p = doc.createParagraph();
             p.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun r = p.createRun();
-            String imgFile = "C:\\Users\\William\\Downloads\\logo.png";
+            String imgFile = "C:\\Users\\Rudy\\Documents\\logoBig.jpg";
             int format;
-            format = XWPFDocument.PICTURE_TYPE_PNG;
+            format = XWPFDocument.PICTURE_TYPE_JPEG;
             r.addBreak();
-            r.addPicture(new FileInputStream(imgFile), format, imgFile, Units.toEMU(512), Units.toEMU(261));
+            r.addPicture(new FileInputStream(imgFile), format, imgFile, Units.toEMU(450), Units.toEMU(222));
 
             XWPFParagraph p1 = doc.createParagraph();
             p1.setAlignment(ParagraphAlignment.CENTER);
             p1.setVerticalAlignment(TextAlignment.CENTER);
 
+            XWPFRun r0 = p1.createRun();
+            r0.getCTR().insertNewBr(1);
+            r0.setFontSize(36);
+            r0.setBold(true);
+            r0.setText("Plumbing Submittal");
+            r0.setBold(true);
+            r0.setFontFamily("Calibri (Body)");
+
             XWPFRun r1 = p1.createRun();
+            r1.getCTR().insertNewBr(1);
             r1.getCTR().insertNewBr(1);
             r1.setFontSize(48);
             r1.setBold(true);
             r1.setUnderline(UnderlinePatterns.SINGLE);
             r1.setText(job);
             r1.setBold(true);
-            r1.setFontFamily("Arial");
+            r1.setFontFamily("Calibri (Body)");
 
             XWPFParagraph p2 = doc.createParagraph();
             p2.setAlignment(ParagraphAlignment.CENTER);
@@ -122,164 +165,406 @@ public class SimpleDocument {
             XWPFRun r2 = p2.createRun();
             r2.getCTR().insertNewBr(1);
             r2.getCTR().insertNewBr(1);
-            r2.setFontSize(22);
+            r2.setFontSize(20);
             r2.setBold(true);
-            r2.setText("by Stasco Mechanical");
+            r2.setText("Prepared by Stasco Mechanical");
             r2.setBold(true);
-            r2.setFontFamily("Arial");
+            r2.setFontFamily("Calibri (Body)");
 
             XWPFParagraph p3 = doc.createParagraph();
             p3.setAlignment(ParagraphAlignment.CENTER);
             p3.setVerticalAlignment(TextAlignment.TOP);
             XWPFRun r3 = p3.createRun();
             r3.setFontSize(22);
+            r3.setUnderline(UnderlinePatterns.SINGLE);
             r3.setBold(true);
             r3.setText("Plumbing Submittal");
             r3.setBold(true);
-            r3.setFontFamily("Arial");
+            r3.setFontFamily("Calibri (Body)");
 
             XWPFParagraph p4 = doc.createParagraph();
             p4.setAlignment(ParagraphAlignment.LEFT);
-            p4.setIndentationLeft(2700);
+            p4.setIndentationLeft(3100);
             p4.setVerticalAlignment(TextAlignment.TOP);
             XWPFRun r4 = p4.createRun();
             r4.setFontSize(16);
-            r4.setFontFamily("Arial");
+            r4.setFontFamily("Calibri (Body)");
             r4.getCTR().insertNewBr(1);
             r4.getCTR().insertNewBr(1);
             r4.setBold(true);
-            r4.setText("Project Name");
+            r4.setText("Project");
             r4.setBold(true);
             XWPFRun proName = p4.createRun();
-            proName.setFontSize(16);
-            proName.setFontFamily("Arial");
+            proName.setFontSize(14);
+            proName.setFontFamily("Calibri (Body)");
             proName.getCTR().insertNewBr(1);
             proName.setText(job);
             XWPFRun proAdd1 = p4.createRun();
-            proAdd1.setFontSize(16);
-            proAdd1.setFontFamily("Arial");
+            proAdd1.setFontSize(12);
+            proAdd1.setFontFamily("Calibri (Body)");
             proAdd1.getCTR().insertNewBr(1);
             proAdd1.setText(jobAdd1);
             XWPFRun proAdd2 = p4.createRun();
-            proAdd2.setFontSize(16);
-            proAdd2.setFontFamily("Arial");
+            proAdd2.setFontSize(12);
+            proAdd2.setFontFamily("Calibri (Body)");
             proAdd2.getCTR().insertNewBr(1);
             proAdd2.setText(jobAdd2);
             p4.setSpacingAfter(1);
 
             XWPFParagraph p5 = doc.createParagraph();
             p5.setAlignment(ParagraphAlignment.LEFT);
-            p5.setIndentationLeft(2700);
+            p5.setIndentationLeft(3100);
             p5.setVerticalAlignment(TextAlignment.TOP);
             XWPFRun r6 = p5.createRun();
             r6.getCTR().insertNewBr(1);
             r6.getCTR().insertNewBr(1);
             r6.setFontSize(16);
-            r6.setFontFamily("Arial");
+            r6.setFontFamily("Calibri (Body)");
             r6.setBold(true);
             r6.setText("Architect");
             r6.setBold(true);
             XWPFRun archTitle = p5.createRun();
             archTitle.getCTR().insertNewBr(1);
-            archTitle.setFontSize(16);
-            archTitle.setFontFamily("Arial");
-            archTitle.setText(archName);
+            archTitle.setFontSize(14);
+            archTitle.setFontFamily("Calibri (Body)");
+            archTitle.setText(architectName);
             XWPFRun archAddress1 = p5.createRun();
-            archAddress1.setFontSize(16);
-            archAddress1.setFontFamily("Arial");
+            archAddress1.setFontSize(12);
+            archAddress1.setFontFamily("Calibri (Body)");
             archAddress1.getCTR().insertNewBr(1);
-            archAddress1.setText(archAdd1);
+            archAddress1.setText(architectAdd1);
             XWPFRun archAddress2 = p5.createRun();
-            archAddress2.setFontSize(16);
-            archAddress2.setFontFamily("Arial");
+            archAddress2.setFontSize(12);
+            archAddress2.setFontFamily("Calibri (Body)");
             archAddress2.getCTR().insertNewBr(1);
-            archAddress2.setText(archAdd2);
+            archAddress2.setText(architectAdd2);
             XWPFRun archPhoneNum = p5.createRun();
-            archPhoneNum.setFontSize(16);
-            archPhoneNum.setFontFamily("Arial");
+            archPhoneNum.setFontSize(12);
+            archPhoneNum.setFontFamily("Calibri (Body)");
             archPhoneNum.getCTR().insertNewBr(1);
-            archPhoneNum.setText("770-422-7118");
+            archPhoneNum.setText(architectPhone);
             p5.setSpacingAfter(1);
 
             XWPFParagraph p6 = doc.createParagraph();
             p6.setAlignment(ParagraphAlignment.LEFT);
-            p6.setIndentationLeft(2700);
+            p6.setIndentationLeft(3100);
             p6.setVerticalAlignment(TextAlignment.TOP);
             XWPFRun r8 = p6.createRun();
             r8.getCTR().insertNewBr(1);
             r8.getCTR().insertNewBr(1);
             r8.setFontSize(16);
-            r8.setFontFamily("Arial");
+            r8.setFontFamily("Calibri (Body)");
             r8.setBold(true);
             r8.setText("General Contractor");
             r8.setBold(true);
             XWPFRun gcTitle = p6.createRun();
             gcTitle.getCTR().insertNewBr(1);
-            gcTitle.setFontSize(16);
-            gcTitle.setFontFamily("Arial");
-            gcTitle.setText(gcName);
+            gcTitle.setFontSize(14);
+            gcTitle.setFontFamily("Calibri (Body)");
+            gcTitle.setText(genConName);
             XWPFRun gcAddress1 = p6.createRun();
-            gcAddress1.setFontSize(16);
-            gcAddress1.setFontFamily("Arial");
+            gcAddress1.setFontSize(12);
+            gcAddress1.setFontFamily("Calibri (Body)");
             gcAddress1.getCTR().insertNewBr(1);
-            gcAddress1.setText(archAdd1);
+            gcAddress1.setText(genConAdd1);
             XWPFRun gcAddress2 = p6.createRun();
-            gcAddress2.setFontSize(16);
-            gcAddress2.setFontFamily("Arial");
+            gcAddress2.setFontSize(12);
+            gcAddress2.setFontFamily("Calibri (Body)");
             gcAddress2.getCTR().insertNewBr(1);
-            gcAddress2.setText(archAdd2);
+            gcAddress2.setText(genConAdd2);
             XWPFRun gcPhoneNum = p6.createRun();
-            gcPhoneNum.setFontSize(16);
-            gcPhoneNum.setFontFamily("Arial");
+            gcPhoneNum.setFontSize(12);
+            gcPhoneNum.setFontFamily("Calibri (Body)");
             gcPhoneNum.getCTR().insertNewBr(1);
-            gcPhoneNum.setText("770-422-7118");
+            gcPhoneNum.setText(genConPhone);
             p6.setSpacingAfter(1);
 
             XWPFParagraph p7 = doc.createParagraph();
             p7.setAlignment(ParagraphAlignment.LEFT);
-            p7.setIndentationLeft(2700);
+            p7.setIndentationLeft(3100);
             p7.setVerticalAlignment(TextAlignment.TOP);
             XWPFRun r10 = p7.createRun();
             r10.getCTR().insertNewBr(1);
             r10.getCTR().insertNewBr(1);
             r10.setFontSize(16);
-            r10.setFontFamily("Arial");
+            r10.setFontFamily("Calibri (Body)");
             r10.setBold(true);
             r10.setText("SubContractor");
             r10.setBold(true);
             XWPFRun stascoName = p7.createRun();
             stascoName.getCTR().insertNewBr(1);
-            stascoName.setFontSize(16);
-            stascoName.setFontFamily("Arial");
+            stascoName.setFontSize(14);
+            stascoName.setFontFamily("Calibri (Body)");
             stascoName.setText("Stasco Mechanical Contractors");
             XWPFRun stascoAdd1 = p7.createRun();
-            stascoAdd1.setFontSize(16);
-            stascoAdd1.setFontFamily("Arial");
+            stascoAdd1.setFontSize(12);
+            stascoAdd1.setFontFamily("Calibri (Body)");
             stascoAdd1.getCTR().insertNewBr(1);
             stascoAdd1.setText("1391 Cobb Parkway North");
             XWPFRun stascoAdd2 = p7.createRun();
-            stascoAdd2.setFontSize(16);
-            stascoAdd2.setFontFamily("Arial");
+            stascoAdd2.setFontSize(12);
+            stascoAdd2.setFontFamily("Calibri (Body)");
             stascoAdd2.getCTR().insertNewBr(1);
             stascoAdd2.setText("Marietta, Georgia 30062");
             XWPFRun stascoPhone = p7.createRun();
-            stascoPhone.setFontSize(16);
-            stascoPhone.setFontFamily("Arial");
+            stascoPhone.setFontSize(12);
+            stascoPhone.setFontFamily("Calibri (Body)");
             stascoPhone.getCTR().insertNewBr(1);
             stascoPhone.setText("770-422-7118");
-            r2.addBreak(BreakType.PAGE);
+            stascoPhone.addBreak(BreakType.PAGE);
+
+            int numMainCat = root.getNumChildren();
+            List<TreeNode<String>> mainCatList = new ArrayList<>();
+            mainCatList = root.children;
+            XWPFParagraph p8 = doc.createParagraph();
+            p8.setAlignment(ParagraphAlignment.CENTER);
+            p8.setVerticalAlignment(TextAlignment.TOP);
+            XWPFRun r11 = p8.createRun();
+            r11.setFontSize(22);
+            r11.setFontFamily("Calibri (Body)");
+            r11.setUnderline(UnderlinePatterns.SINGLE);
+            r11.setBold(true);
+            r11.setText("INDEX");
+            r11.setBold(true);
+
+            XWPFParagraph p9 = doc.createParagraph();
+            p9.setAlignment(ParagraphAlignment.LEFT);
+            p9.setVerticalAlignment(TextAlignment.TOP);
+            String curNumString;
+            int curNum;
+
+            for (int i = 0; i < mainCatList.size(); i++) {
+                XWPFRun r12 = p9.createRun();
+                r12.setFontSize(14);
+                r12.setFontFamily("Calibri (Body)");
+                r12.getCTR().insertNewBr(1);
+                r12.getCTR().insertNewBr(1);
+                r12.getCTR().insertNewBr(1);
+                curNum = i + 1;
+                curNumString = curNum + ") ";
+                r12.setBold(true);
+                r12.setText(curNumString + mainCatList.get(i).data);
+                r12.setBold(true);
+                if (i == mainCatList.size() - 1) {
+                    r12.addBreak(BreakType.PAGE);
+                }
+            }
+
+            List<TreeNode<String>> subCatList = new ArrayList<>();
+            List<TreeNode<String>> subList = new ArrayList<>();
+            String file;
+            int slashIndex;
+            int dotIndex;
+            CharBuffer slash = CharBuffer.allocate(1);
+            slash.append('\\');
+
+            for (int i = 0; i < mainCatList.size(); i++) {
+                XWPFParagraph p10 = doc.createParagraph();
+                p10.setAlignment(ParagraphAlignment.LEFT);
+                p10.setVerticalAlignment(TextAlignment.TOP);
+                p10.setIndentationLeft(1000);
+                XWPFRun r13 = p10.createRun();
+                r13.getCTR().insertNewBr(1);
+                r13.getCTR().insertNewBr(1);
+                r13.getCTR().insertNewBr(1);
+                r13.getCTR().insertNewBr(1);
+                r13.getCTR().insertNewBr(1);
+                r13.getCTR().insertNewBr(1);
+                r13.getCTR().insertNewBr(1);
+                r13.setFontSize(20);
+                r13.setFontFamily("Calibri (Body)");
+                curNum = i + 1;
+                curNumString = curNum + ")      ";
+                r13.setBold(true);
+                r13.setText(curNumString + mainCatList.get(i).data);
+                r13.setBold(true);
+                subCatList = mainCatList.get(i).children;
+
+
+                for (int j = 0; j < subCatList.size(); j++) {
+                    XWPFRun r14 = p10.createRun();
+                    r14.setFontSize(16);
+                    r14.setFontFamily("Calibri (Body)");
+                    r14.getCTR().insertNewBr(1);
+                    r14.getCTR().insertNewBr(1);
+                    curNum = j + 1;
+                    curNumString = "     " + String.valueOf((char) (curNum + 64)) + ". ";
+                    r14.setText(curNumString + subCatList.get(j).data);
+                    subList = subCatList.get(j).children;
+
+                    for (int k = 0; k < subList.size(); k++) {
+                        XWPFRun r15 = p10.createRun();
+                        r15.setFontSize(12);
+                        r15.setFontFamily("Calibri (Body)");
+                        if (k == 0) {
+                            r15.getCTR().insertNewBr(1);
+                        }
+                        r15.getCTR().insertNewBr(1);
+                        slashIndex = subList.get(k).data.lastIndexOf('\\') + 1;
+                        dotIndex = subList.get(k).data.lastIndexOf('.');
+                        if (subList.get(k).data.contains(slash)) {
+                            file = subList.get(k).data.substring(slashIndex, dotIndex);
+                        } else {
+                            file = subList.get(k).data;
+                        }
+                        r15.setText("                 " + file);
+
+                        if (j == subCatList.size() - 1 && k == subList.size() - 1) {
+                            r15.addBreak(BreakType.PAGE);
+                        }
+                    }
+                }
+
+
+            }
+
 
             try (FileOutputStream out = new FileOutputStream("simple1.docx")) {
                 doc.write(out);
             }
 
-        }
-        catch(FileNotFoundException e){
+        } catch(
+                FileNotFoundException e)
+
+        {
+            e.printStackTrace();
+        } catch(
+                IOException e)
+
+        {
+            e.printStackTrace();
+        } catch(
+                InvalidFormatException e)
+
+        {
             e.printStackTrace();
         }
-        catch(IOException e){
-            e.printStackTrace();
-        }
+    }
+
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Submittal Generator");
+
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+
+        Text scenetitle = new Text("Welcome");
+        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        grid.add(scenetitle, 0, 0, 2, 1);
+
+        Label projName = new Label("Project Name:");
+        grid.add(projName, 0, 1);
+
+        TextField pnField = new TextField();
+        grid.add(pnField, 1, 1);
+
+        Label projAdd1 = new Label("Project Address Part One:");
+        grid.add(projAdd1, 0, 2);
+
+        TextField pAdd1 = new TextField();
+        grid.add(pAdd1, 1, 2);
+
+        Label projAdd2 = new Label("Project Address Part Two:");
+        grid.add(projAdd2, 0, 3);
+
+        TextField pAdd2 = new TextField();
+        grid.add(pAdd2, 1, 3);
+
+        Label archName = new Label("Architect Name:");
+        grid.add(archName, 0, 4);
+
+        TextField archNameField = new TextField();
+        grid.add(archNameField, 1, 4);
+
+        Label archAdd1 = new Label("Architect Address Part One:");
+        grid.add(archAdd1, 0, 5);
+
+        TextField aAdd1 = new TextField();
+        grid.add(aAdd1, 1, 5);
+
+        Label archAdd2 = new Label("Architect Address Part Two:");
+        grid.add(archAdd2, 0, 6);
+
+        TextField aAdd2 = new TextField();
+        grid.add(aAdd2, 1, 6);
+
+        Label archPhone = new Label("Architect Phone Number:");
+        grid.add(archPhone, 0, 7);
+
+        TextField archPhoneField = new TextField();
+        grid.add(archPhoneField, 1, 7);
+
+        Label gcName = new Label("General Contractor Name:");
+        grid.add(gcName, 0, 8);
+
+        TextField gcNameField = new TextField();
+        grid.add(gcNameField, 1, 8);
+
+        Label gcAdd1 = new Label("General Contractor Address Part One:");
+        grid.add(gcAdd1, 0, 9);
+
+        TextField gAdd1 = new TextField();
+        grid.add(gAdd1, 1, 9);
+
+        Label gcAdd2 = new Label("General Contractor Address Part Two:");
+        grid.add(gcAdd2, 0, 10);
+
+        TextField gAdd2 = new TextField();
+        grid.add(gAdd2, 1, 10);
+
+        Label gcPhone = new Label("General Contractor Phone Number:");
+        grid.add(gcPhone, 0, 11);
+
+        TextField gcPhoneField = new TextField();
+        grid.add(gcPhoneField, 1, 11);
+
+        Button btn = new Button("Create Submittal");
+        HBox hbBtn = new HBox(10);
+        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
+        hbBtn.getChildren().add(btn);
+        grid.add(hbBtn, 1, 12);
+
+        final Text actiontarget = new Text();
+        grid.add(actiontarget, 1, 13);
+
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+
+
+            @Override
+            public void handle(ActionEvent e) {
+                actiontarget.setFill(Color.FIREBRICK);
+                actiontarget.setText("Button pressed");
+                String job = valueOf(pnField.getText());
+                String jobAdd1 = valueOf(pAdd1.getText());
+                String jobAdd2 = valueOf(pAdd2.getText());
+                String architectName = valueOf(archNameField.getText());
+                String architectAdd1 = valueOf(aAdd1.getText());
+                String architectAdd2 = valueOf(aAdd2.getText());
+                String architectPhone = valueOf(archPhoneField.getText());
+                String genConName = valueOf(gcNameField.getText());
+                String genConAdd1 = valueOf(gAdd1.getText());
+                String genConAdd2 = valueOf(gAdd2.getText());
+                String genConPhone = valueOf(gcPhoneField.getText());
+
+            }
+
+
+        });
+
+        Scene scene = new Scene(grid, 600, 700);
+        primaryStage.setScene(scene);
+
+        primaryStage.show();
+
+    }
+    //String filePath = "C:\\Users\\Rudy\\Desktop\\SubmittalTemplate.docx";
+
+
+
 
         /*try (XWPFDocument doc = new XWPFDocument()) {
 
@@ -372,4 +657,5 @@ public class SimpleDocument {
             }
         }*/
     }
-}
+
+
