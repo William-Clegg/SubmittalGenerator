@@ -135,6 +135,14 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
         final TextField gcPhoneField = new TextField();
         grid.add(gcPhoneField, 1, 11);
 
+        ChoiceBox<String> architect = new ChoiceBox(FXCollections.observableArrayList(
+                "Peacock Architects", "ASD/SKY")
+        );
+
+        ChoiceBox<String> genContractor = new ChoiceBox(FXCollections.observableArrayList(
+                "Balfour Beatty", "Batson-Cook", "Brasfield & Gorrie", "DPR Construction", "")
+        );
+
         Button btn = new Button("Next");
         HBox hbBtn = new HBox(10);
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
@@ -186,8 +194,26 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
     }
 
     public void createScene1() {
+
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+
         Label title = new Label();
         title.setText("Categories");
+
+        Label mainCatLabel = new Label("Add a Main Category");
+        final TextField mainCatField = new TextField();
+        Button addMain = new Button();
+        addMain.setText("Add Main Category");
+
+        Label subCatLabel = new Label("Add a Sub Category");
+        final TextField subCatField = new TextField();
+        Button addSub = new Button();
+        addSub.setText("Add Sub Category");
+
         Button button = new Button();
         button.setText("Next");
         // switch to scene 2
@@ -206,11 +232,10 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
             createScene2();*/
         });
 
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
+        grid.add(mainCatLabel, 0, 1);
+        grid.add(subCatLabel, 1, 1);
+        grid.add(mainCatField, 0, 2);
+        grid.add(subCatField, 1, 2);
 
         // Controls
         ToggleGroup group = new ToggleGroup();
@@ -226,10 +251,26 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
             }
         });
         */
+        HBox mainBtn = new HBox(10);
+        mainBtn.getChildren().add(addMain);
+        grid.add(mainBtn, 0, 3);
+
+        addMain.setOnAction(e -> {
+            subSheets.add(mainCatField.getText());
+        });
+
+        HBox subBtn = new HBox(10);
+        subBtn.getChildren().add(addSub);
+        grid.add(subBtn, 1, 3);
+
+        addSub.setOnAction(e -> {
+            subSheets.add(subCatField.getText());
+        });
+
 
         // Add the Controls
-        grid.add(fileListView, 0, 0, 2, 1);
-        scene1 = new Scene(grid, 700, 600);
+        grid.add(fileListView, 0, 5, 2, 1);
+        scene1 = new Scene(grid, 600, 600);
         scene1.setOnDragOver(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
