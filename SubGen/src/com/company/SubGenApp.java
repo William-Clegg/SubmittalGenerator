@@ -1,51 +1,27 @@
 package com.company;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.TextFieldListCell;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.collections.*;
-import javafx.geometry.*;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.scene.input.*;
-import java.util.*;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import javafx.application.Application;
-import javafx.event.EventHandler;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
-import javafx.util.Callback;
 
-import static java.lang.String.valueOf;
+import java.io.File;
 
 public class SubGenApp extends Application {
 Stage window;
@@ -135,13 +111,91 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
         final TextField gcPhoneField = new TextField();
         grid.add(gcPhoneField, 1, 11);
 
-        ChoiceBox<String> architect = new ChoiceBox(FXCollections.observableArrayList(
+        Label archBox = new Label("Architect List:");
+        final ChoiceBox architect = new ChoiceBox(FXCollections.observableArrayList(
                 "Peacock Architects", "ASD/SKY")
         );
+        grid.add(architect, 2,4);
+        grid.add(archBox,2,3);
 
-        ChoiceBox<String> genContractor = new ChoiceBox(FXCollections.observableArrayList(
-                "Balfour Beatty", "Batson-Cook", "Brasfield & Gorrie", "DPR Construction", "")
+        architect.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+
+                switch (newValue.intValue()) {
+
+                    case 0: archNameField.setText("Peacock Partnership");
+                            aAdd1.setText("5525 Interstate North Parkway");
+                            aAdd2.setText("Atlanta, GA 30328");
+                            archPhoneField.setText("404-214-5200");
+                            break;
+
+                    case 1: archNameField.setText("ASD|SKY");
+                            aAdd1.setText("55 Ivan Allen Jr Boulevard NW Suite 100");
+                            aAdd2.setText("Atlanta, GA 30308");
+                            archPhoneField.setText("404-688-2255");
+                            break;
+
+                    case 2: archNameField.setText("");
+                            aAdd1.setText("");
+                            aAdd2.setText("");
+                            archPhoneField.setText("");
+                            break;
+
+                    case 3: archNameField.setText("");
+                            aAdd1.setText("");
+                            aAdd2.setText("");
+                            archPhoneField.setText("");
+                            break;
+                }
+            }
+        });
+
+        Label gcBox = new Label("General Contractor List:");
+        final ChoiceBox genContractor = new ChoiceBox(FXCollections.observableArrayList(
+                "Balfour Beatty", "Batson-Cook", "Brasfield & Gorrie", "DPR Construction", "Van Winkle")
         );
+        grid.add(genContractor, 2, 8);
+        grid.add(gcBox,2,7);
+
+        genContractor.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+
+                switch (newValue.intValue()) {
+
+                    case 0: gcNameField.setText("Balfour Beatty");
+                            gAdd1.setText("600 Galleria Parkway, Suite 1500");
+                            gAdd2.setText("Atlanta, GA 30339");
+                            gcPhoneField.setText("678-921-6800");
+                            break;
+
+                    case 1: gcNameField.setText("Batson-Cook");
+                            gAdd1.setText("200 Galleria Parkway, Suite 1300");
+                            gAdd2.setText("Atlanta, GA 30339");
+                            gcPhoneField.setText("770-955-1951");
+                            break;
+
+                    case 2: gcNameField.setText("Brasfield & Gorrie");
+                            gAdd1.setText("1990 Vaughn Road");
+                            gAdd2.setText("Kennesaw, GA 30144");
+                            gcPhoneField.setText("678-581-6400");
+                            break;
+
+                    case 3: gcNameField.setText("DPR Construction");
+                            gAdd1.setText("3301 Windy Ridge Parkway SE Suite 500");
+                            gAdd2.setText("Atlanta, GA 30339");
+                            gcPhoneField.setText("404-264-0404");
+                            break;
+
+                    case 4: gcNameField.setText("Van Winkle Construction");
+                            gAdd1.setText("1731 Commerce Drive NW Suite 110");
+                            gAdd2.setText("Atlanta, GA 30318");
+                            gcPhoneField.setText("404-351-9500");
+                            break;
+                }
+            }
+        });
 
         Button btn = new Button("Next");
         HBox hbBtn = new HBox(10);
