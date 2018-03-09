@@ -1,6 +1,7 @@
 package com.company;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -10,25 +11,29 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.image.Image;
+import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
+import javafx.scene.image.ImageView;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SubGenApp extends Application {
-Stage window;
-Scene scene, scene1, scene2, scene3;
-String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, architectPhone, genConName, genConAdd1, genConAdd2, genConPhone;
+    Stage window;
+    Scene scene, scene1, scene2, scene3;
+    String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, architectPhone, genConName, genConAdd1, genConAdd2, genConPhone;
 
     static ObservableList<String> subSheets = FXCollections.observableArrayList();
+
+    private static final ObservableList<Image> subSheetsImages = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -115,8 +120,8 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
         final ChoiceBox architect = new ChoiceBox(FXCollections.observableArrayList(
                 "Peacock Architects", "ASD/SKY")
         );
-        grid.add(architect, 2,4);
-        grid.add(archBox,2,3);
+        grid.add(architect, 5, 4);
+        grid.add(archBox, 5, 3);
 
         architect.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -124,29 +129,33 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
 
                 switch (newValue.intValue()) {
 
-                    case 0: archNameField.setText("Peacock Partnership");
-                            aAdd1.setText("5525 Interstate North Parkway");
-                            aAdd2.setText("Atlanta, GA 30328");
-                            archPhoneField.setText("404-214-5200");
-                            break;
+                    case 0:
+                        archNameField.setText("Peacock Partnership");
+                        aAdd1.setText("5525 Interstate North Parkway");
+                        aAdd2.setText("Atlanta, GA 30328");
+                        archPhoneField.setText("404-214-5200");
+                        break;
 
-                    case 1: archNameField.setText("ASD|SKY");
-                            aAdd1.setText("55 Ivan Allen Jr Boulevard NW Suite 100");
-                            aAdd2.setText("Atlanta, GA 30308");
-                            archPhoneField.setText("404-688-2255");
-                            break;
+                    case 1:
+                        archNameField.setText("ASD|SKY");
+                        aAdd1.setText("55 Ivan Allen Jr Boulevard NW Suite 100");
+                        aAdd2.setText("Atlanta, GA 30308");
+                        archPhoneField.setText("404-688-2255");
+                        break;
 
-                    case 2: archNameField.setText("");
-                            aAdd1.setText("");
-                            aAdd2.setText("");
-                            archPhoneField.setText("");
-                            break;
+                    case 2:
+                        archNameField.setText("");
+                        aAdd1.setText("");
+                        aAdd2.setText("");
+                        archPhoneField.setText("");
+                        break;
 
-                    case 3: archNameField.setText("");
-                            aAdd1.setText("");
-                            aAdd2.setText("");
-                            archPhoneField.setText("");
-                            break;
+                    case 3:
+                        archNameField.setText("");
+                        aAdd1.setText("");
+                        aAdd2.setText("");
+                        archPhoneField.setText("");
+                        break;
                 }
             }
         });
@@ -155,8 +164,8 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
         final ChoiceBox genContractor = new ChoiceBox(FXCollections.observableArrayList(
                 "Balfour Beatty", "Batson-Cook", "Brasfield & Gorrie", "DPR Construction", "Van Winkle")
         );
-        grid.add(genContractor, 2, 8);
-        grid.add(gcBox,2,7);
+        grid.add(genContractor, 5, 8);
+        grid.add(gcBox, 5, 7);
 
         genContractor.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -164,35 +173,40 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
 
                 switch (newValue.intValue()) {
 
-                    case 0: gcNameField.setText("Balfour Beatty");
-                            gAdd1.setText("600 Galleria Parkway, Suite 1500");
-                            gAdd2.setText("Atlanta, GA 30339");
-                            gcPhoneField.setText("678-921-6800");
-                            break;
+                    case 0:
+                        gcNameField.setText("Balfour Beatty");
+                        gAdd1.setText("600 Galleria Parkway, Suite 1500");
+                        gAdd2.setText("Atlanta, GA 30339");
+                        gcPhoneField.setText("678-921-6800");
+                        break;
 
-                    case 1: gcNameField.setText("Batson-Cook");
-                            gAdd1.setText("200 Galleria Parkway, Suite 1300");
-                            gAdd2.setText("Atlanta, GA 30339");
-                            gcPhoneField.setText("770-955-1951");
-                            break;
+                    case 1:
+                        gcNameField.setText("Batson-Cook");
+                        gAdd1.setText("200 Galleria Parkway, Suite 1300");
+                        gAdd2.setText("Atlanta, GA 30339");
+                        gcPhoneField.setText("770-955-1951");
+                        break;
 
-                    case 2: gcNameField.setText("Brasfield & Gorrie");
-                            gAdd1.setText("1990 Vaughn Road");
-                            gAdd2.setText("Kennesaw, GA 30144");
-                            gcPhoneField.setText("678-581-6400");
-                            break;
+                    case 2:
+                        gcNameField.setText("Brasfield & Gorrie");
+                        gAdd1.setText("1990 Vaughn Road");
+                        gAdd2.setText("Kennesaw, GA 30144");
+                        gcPhoneField.setText("678-581-6400");
+                        break;
 
-                    case 3: gcNameField.setText("DPR Construction");
-                            gAdd1.setText("3301 Windy Ridge Parkway SE Suite 500");
-                            gAdd2.setText("Atlanta, GA 30339");
-                            gcPhoneField.setText("404-264-0404");
-                            break;
+                    case 3:
+                        gcNameField.setText("DPR Construction");
+                        gAdd1.setText("3301 Windy Ridge Parkway SE Suite 500");
+                        gAdd2.setText("Atlanta, GA 30339");
+                        gcPhoneField.setText("404-264-0404");
+                        break;
 
-                    case 4: gcNameField.setText("Van Winkle Construction");
-                            gAdd1.setText("1731 Commerce Drive NW Suite 110");
-                            gAdd2.setText("Atlanta, GA 30318");
-                            gcPhoneField.setText("404-351-9500");
-                            break;
+                    case 4:
+                        gcNameField.setText("Van Winkle Construction");
+                        gAdd1.setText("1731 Commerce Drive NW Suite 110");
+                        gAdd2.setText("Atlanta, GA 30318");
+                        gcPhoneField.setText("404-351-9500");
+                        break;
                 }
             }
         });
@@ -241,7 +255,7 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
             }
         });
 */
-        scene = new Scene(grid, 600, 700);
+        scene = new Scene(grid, 900, 700);
         primaryStage.setScene(scene);
 
         primaryStage.show();
@@ -254,6 +268,7 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
+
 
         Label title = new Label();
         title.setText("Categories");
@@ -285,32 +300,33 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
             genConPhone = gcPhoneField.getText();
             createScene2();*/
         });
+        HBox nextBtn = new HBox(10);
+        nextBtn.setAlignment(Pos.BOTTOM_RIGHT);
+        nextBtn.getChildren().add(button);
+        grid.add(nextBtn, 1, 12);
+
 
         grid.add(mainCatLabel, 0, 1);
         grid.add(subCatLabel, 1, 1);
         grid.add(mainCatField, 0, 2);
         grid.add(subCatField, 1, 2);
 
-        // Controls
-        ToggleGroup group = new ToggleGroup();
-
 
         ListView<String> fileListView = new ListView<>(subSheets);
-        /*
-        fileListView.setCellFactory(new Callback<ListView<FileCellState>, ListCell<FileCellState>>() {
-            public ListCell<FileCellState> call(ListView<FileCellState> param) {
-                FileCell fileCell = new FileCell();
-                fileCell.focusedRB.setToggleGroup(group);
-                return fileCell;
-            }
-        });
-        */
+
         HBox mainBtn = new HBox(10);
         mainBtn.getChildren().add(addMain);
         grid.add(mainBtn, 0, 3);
 
         addMain.setOnAction(e -> {
-            subSheets.add(mainCatField.getText());
+            Text t;
+            if (!mainCatField.getText().isEmpty()) {
+                t = new Text(mainCatField.getText());
+                subSheetsImages.add(t.snapshot(null, null));
+                subSheets.add(mainCatField.getText());
+                System.out.println(subSheets);
+                System.out.println(subSheetsImages);
+            }
         });
 
         HBox subBtn = new HBox(10);
@@ -318,13 +334,53 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
         grid.add(subBtn, 1, 3);
 
         addSub.setOnAction(e -> {
-            subSheets.add(subCatField.getText());
+            Text t;
+            if (!subCatField.getText().isEmpty()) {
+                t = new Text("  " + subCatField.getText());
+                subSheetsImages.add(t.snapshot(null, null));
+                subSheets.add("  " + subCatField.getText());
+                System.out.println(subSheets);
+                System.out.println(subSheetsImages);
+            }
         });
 
 
         // Add the Controls
         grid.add(fileListView, 0, 5, 2, 1);
         scene1 = new Scene(grid, 600, 600);
+
+        Button delete = new Button();
+        delete.setText("Delete");
+        delete.setOnAction(e -> {
+            if (!fileListView.getSelectionModel().getSelectedItems().isEmpty()) {
+                String item = fileListView.getSelectionModel().getSelectedItem();
+                int index = fileListView.getSelectionModel().getSelectedIndex();
+                fileListView.getItems().remove(index);
+                subSheetsImages.remove(index);
+                //subSheets.remove(subSheets.indexOf(item));
+
+            }
+        });
+        HBox deleteBtn = new HBox(10);
+        deleteBtn.setAlignment(Pos.CENTER_RIGHT);
+        deleteBtn.getChildren().add(delete);
+        grid.add(deleteBtn, 2, 5);
+
+        fileListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (event.getClickCount() == 2 && !fileListView.getSelectionModel().getSelectedItems().isEmpty()) {
+                    String item = fileListView.getSelectionModel().getSelectedItem();
+                    int index = fileListView.getSelectionModel().getSelectedIndex();
+                    fileListView.getItems().remove(index);
+                    subSheetsImages.remove(index);
+                    //subSheets.remove(subSheets.indexOf(item));
+                }
+            }
+        });
+
+        fileListView.setCellFactory(param -> new FileCell());
+
         scene1.setOnDragOver(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
@@ -346,10 +402,13 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
                 if (db.hasFiles()) {
                     success = true;
                     String filePath = null;
-                    for (File file:db.getFiles()) {
-                        filePath = file.getAbsolutePath();
+                    for (File file : db.getFiles()) {
+                        filePath = "    " + (file.getAbsolutePath()).substring((("    " + file.getAbsolutePath()).lastIndexOf('\\')) + 1);
+                        Text t = new Text(filePath);
+                        subSheetsImages.add(t.snapshot(null, null));
                         subSheets.add(filePath);
-                        System.out.println(filePath);
+                        System.out.println(subSheets);
+                        System.out.println(subSheetsImages);
                     }
                 }
                 event.setDropCompleted(success);
@@ -357,6 +416,12 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
             }
         });
 
+        Text scenetitle = new Text("Add all main and sub categories as you would like them to appear on the final document. Drag word " +
+                "documents containing a submittal and drop it in this window but outside of the list. Any item can be double clicked to " +
+                "delete or dragged to reorder within the list.");
+        scenetitle.setFont(Font.font("Times New Roman", FontWeight.NORMAL, 12));
+        //scenetitle.setAlignment(Pos.BOTTOM_CENTER);
+        grid.add(scenetitle, 0, 6, 2, 1);
 
         window.setScene(scene1);
     }
@@ -385,13 +450,116 @@ String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, archi
 
     public static void main(String[] args) {
         launch(args);
-        for(int i = 0; i < subSheets.size(); i++) {
+        for (int i = 0; i < subSheets.size(); i++) {
             System.out.println(subSheets.get(i));
+            System.out.println(subSheetsImages.get(i));
         }
 
     }
 
+    private class FileCell extends ListCell<String> {
+        private final ImageView imageView = new ImageView();
+
+        public FileCell() {
+            ListCell thisCell = this;
+
+            setAlignment(Pos.CENTER_LEFT);
+
+            setOnDragDetected(event -> {
+                if (getItem() == null) {
+                    return;
+                }
+
+                ObservableList<String> items = getListView().getItems();
+
+                Dragboard dragboard = startDragAndDrop(TransferMode.MOVE);
+                ClipboardContent content = new ClipboardContent();
+                content.putString(getItem());
+                dragboard.setDragView(
+                        subSheetsImages.get(
+                                items.indexOf(
+                                        getItem()
+                                )
+                        )
+                );
+                dragboard.setContent(content);
+
+                event.consume();
+            });
+
+            setOnDragOver(event -> {
+                if (event.getGestureSource() != thisCell &&
+                        event.getDragboard().hasString()) {
+                    event.acceptTransferModes(TransferMode.MOVE);
+                }
+
+                event.consume();
+            });
+
+            setOnDragEntered(event -> {
+                if (event.getGestureSource() != thisCell &&
+                        event.getDragboard().hasString()) {
+                    setOpacity(0.3);
+                }
+            });
+
+            setOnDragExited(event -> {
+                if (event.getGestureSource() != thisCell &&
+                        event.getDragboard().hasString()) {
+                    setOpacity(1);
+                }
+            });
+
+            setOnDragDropped(event -> {
+                if (getItem() == null) {
+                    return;
+                }
+
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+
+                if (db.hasString()) {
+                    ObservableList<String> items = getListView().getItems();
+                    int draggedIdx = items.indexOf(db.getString());
+                    int thisIdx = items.indexOf(getItem());
+
+                    Image temp = subSheetsImages.get(draggedIdx);
+                    subSheetsImages.set(draggedIdx, subSheetsImages.get(thisIdx));
+                    subSheetsImages.set(thisIdx, temp);
+
+                    items.set(draggedIdx, getItem());
+                    items.set(thisIdx, db.getString());
+
+                    List<String> itemscopy = new ArrayList<>(getListView().getItems());
+                    getListView().getItems().setAll(itemscopy);
+
+                    success = true;
+                }
+                event.setDropCompleted(success);
+
+                event.consume();
+            });
+
+            setOnDragDone(DragEvent::consume);
+        }
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty); //item is new item for the cell
+
+            if (empty || item == null) {
+                setGraphic(null);
+            } else {
+                imageView.setImage(
+                        subSheetsImages.get(getListView().getItems().indexOf(item)));
+                setGraphic(imageView);
+            }
+        }
+
+    }
 }
+
+
 
 
 
