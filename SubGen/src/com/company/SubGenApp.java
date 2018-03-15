@@ -23,9 +23,12 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.image.ImageView;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -393,7 +396,7 @@ public class SubGenApp extends Application {
             XWPFParagraph p = doc.createParagraph();
             p.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun r = p.createRun();
-            String imgFile = "C:\\Users\\William\\Downloads\\logoBig.png";
+            String imgFile = "C:\\Users\\Rudy\\Documents\\logoBig.jpg";
             int format;
             format = XWPFDocument.PICTURE_TYPE_JPEG;
             r.addBreak();
@@ -616,7 +619,6 @@ public class SubGenApp extends Application {
             String curNumString;
             int curNum = 0;
             int curSubNum = 1;
-            int breakMeasure = 0;
             boolean newCat = false;
 
             for(int i = 0; i < subSheets.size(); i++) {
@@ -687,6 +689,27 @@ public class SubGenApp extends Application {
                     XWPFRun r13 = p11.createRun();
                     if(curNum != 1) {
                         r13.addBreak(BreakType.PAGE);
+                        /*for (int j = 0; j < subSheets.size(); j++) {
+                            if(subSheets.get(j).substring(0, 4).equals("    ")) {
+                                try {
+                                    XWPFDocument subDoc = new XWPFDocument(new FileInputStream(subSheets.get(j).substring(4)));
+                                    List<XWPFPictureData> pic = subDoc.getAllPictures();
+                                    BufferedImage jpg = null;
+                                    for(int k = 0; k < pic.size(); k++) {
+                                        XWPFParagraph picPar = doc.createParagraph();
+                                        XWPFRun picRun = p.createRun();
+                                        XWPFPictureData pict = pic.get(k);
+                                        String extract = pict.suggestFileExtension();
+                                        byte[] data = pict.getData();
+                                        //try to read image data using javax.imageio.* (JDK 1.4+)
+                                        jpg = ImageIO.read(new ByteArrayInputStream(data));
+                                        picRun.addPicture(new FileInputStream(pic.get(k)), XWPFDocument.PICTURE_TYPE_JPEG, subSheets.get(j), Units.toEMU(800), Units.toEMU(1200));
+                                    }
+                                } catch (Exception notFile) {
+                                    System.err.println(notFile);
+                                }
+                            }
+                        }*/
                     }
                     p11.setAlignment(ParagraphAlignment.LEFT);
                     p11.setVerticalAlignment(TextAlignment.TOP);
