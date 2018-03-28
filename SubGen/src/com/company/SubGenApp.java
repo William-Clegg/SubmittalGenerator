@@ -1,7 +1,6 @@
 package com.company;
 
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -15,32 +14,31 @@ import javafx.scene.image.Image;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.image.ImageView;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.*;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SubGenApp extends Application {
     private Stage window;
-    private Scene scene, scene1, scene2, scene3;
+    private Scene scene, scene1;
     private String job, jobAdd1, jobAdd2, architectName, architectAdd1, architectAdd2, architectPhone, genConName, genConAdd1, genConAdd2, genConPhone;
 
 
-    static ObservableList<String> subSheets = FXCollections.observableArrayList();
+    private static ObservableList<String> subSheets = FXCollections.observableArrayList();
 
     private static final ObservableList<Image> subSheetsImages = FXCollections.observableArrayList();
 
@@ -126,8 +124,8 @@ public class SubGenApp extends Application {
         grid.add(gcPhoneField, 1, 11);
 
         Label archBox = new Label("Architect List:");
-        final ChoiceBox architect = new ChoiceBox(FXCollections.observableArrayList(
-                "Peacock Architects", "ASD|SKY")
+        final ChoiceBox<String> architect = new ChoiceBox<>(FXCollections.observableArrayList(
+                "Peacock Architects", "ASD|SKY", "Freespace Architects")
         );
         grid.add(architect, 5, 4);
         grid.add(archBox, 5, 3);
@@ -153,10 +151,10 @@ public class SubGenApp extends Application {
                         break;
 
                     case 2:
-                        archNameField.setText("");
-                        aAdd1.setText("");
-                        aAdd2.setText("");
-                        archPhoneField.setText("");
+                        archNameField.setText("Freespace Architecture");
+                        aAdd1.setText("887 West Marietta Street NW, Suite T-103");
+                        aAdd2.setText("Atlanta, Georgia 30318");
+                        archPhoneField.setText("404-591-5670");
                         break;
 
                     case 3:
@@ -170,7 +168,7 @@ public class SubGenApp extends Application {
         });
 
         Label gcBox = new Label("General Contractor List:");
-        final ChoiceBox genContractor = new ChoiceBox(FXCollections.observableArrayList(
+        final ChoiceBox<String> genContractor = new ChoiceBox<>(FXCollections.observableArrayList(
                 "Balfour Beatty", "Batson-Cook", "Brasfield & Gorrie", "DPR Construction", "Van Winkle")
         );
         grid.add(genContractor, 5, 8);
@@ -250,7 +248,7 @@ public class SubGenApp extends Application {
         primaryStage.show();
     }
 
-    public void createScene1() {
+    private void createScene1() {
 
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -301,9 +299,21 @@ public class SubGenApp extends Application {
         grid.add(subBtn, 1, 3);
 
         addSub.setOnAction(e -> {
+            int track = 0;
+            String spaces = "";
             Text t;
             if (!subCatField.getText().isEmpty()  && !subSheets.contains("  " + subCatField.getText())) {
                 t = new Text("  " + subCatField.getText());
+                subSheetsImages.add(t.snapshot(null, null));
+                subSheets.add("  " + subCatField.getText());
+                System.out.println(subSheets);
+                System.out.println(subSheetsImages);
+            } else if (!subCatField.getText().isEmpty()  && subSheets.contains("  " + subCatField.getText())) {
+                track++;
+                for(int i = 0; i < track; i++) {
+                    spaces = spaces + " ";
+                }
+                t = new Text("  " + subCatField.getText() + spaces);
                 subSheetsImages.add(t.snapshot(null, null));
                 subSheets.add("  " + subCatField.getText());
                 System.out.println(subSheets);
@@ -324,7 +334,6 @@ public class SubGenApp extends Application {
                 int index = fileListView.getSelectionModel().getSelectedIndex();
                 fileListView.getItems().remove(index);
                 subSheetsImages.remove(index);
-                //subSheets.remove(subSheets.indexOf(item));
 
             }
         });
@@ -341,7 +350,6 @@ public class SubGenApp extends Application {
                     int index = fileListView.getSelectionModel().getSelectedIndex();
                     fileListView.getItems().remove(index);
                     subSheetsImages.remove(index);
-                    //subSheets.remove(subSheets.indexOf(item));
                 }
             }
         });
@@ -360,8 +368,10 @@ public class SubGenApp extends Application {
             }
         });
 
+
         // Dropping over surface
         scene1.setOnDragDropped(new EventHandler<DragEvent>() {
+            int track = 0;
             @Override
             public void handle(DragEvent event) {
                 Dragboard db = event.getDragboard();
@@ -370,8 +380,19 @@ public class SubGenApp extends Application {
                     success = true;
                     String filePath = null;
                     for (File file : db.getFiles()) {
-                        if(!subSheets.contains("    " + file.getAbsolutePath()/*file.getAbsolutePath().substring((("    " + file.getAbsolutePath()).lastIndexOf('\\')) + 1)*/)) {
-                            filePath = "    " + file.getAbsolutePath();//"    " + (file.getAbsolutePath()).substring((("    " + file.getAbsolutePath()).lastIndexOf('\\')) + 1);
+                        if(!subSheets.contains("    " + file.getAbsolutePath())) {
+                            filePath = "    " + file.getAbsolutePath();
+                            Text t = new Text(filePath);
+                            subSheetsImages.add(t.snapshot(null, null));
+                            subSheets.add(filePath);
+                            System.out.println(subSheets);
+                            System.out.println(subSheetsImages);
+                        } else {
+                            track++;
+                            filePath = "    " + file.getAbsolutePath();
+                            for(int i = 0; i < track; i++) {
+                                filePath = filePath + " ";
+                            }
                             Text t = new Text(filePath);
                             subSheetsImages.add(t.snapshot(null, null));
                             subSheets.add(filePath);
@@ -388,11 +409,19 @@ public class SubGenApp extends Application {
 
         Button button = new Button();
         button.setText("Create Submittal");
+
         // switch to scene 2
         button.setOnAction(e -> {
-            createScene2();
 
             XWPFDocument doc = new XWPFDocument();
+
+            CTSectPr sectPr = doc.getDocument().getBody().addNewSectPr();
+            CTPageMar pageMar = sectPr.addNewPgMar();
+            pageMar.setLeft(BigInteger.valueOf(0L));
+            pageMar.setTop(BigInteger.valueOf(0L));
+            pageMar.setRight(BigInteger.valueOf(0L));
+            pageMar.setBottom(BigInteger.valueOf(0L));
+
             XWPFParagraph p = doc.createParagraph();
             p.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun r = p.createRun();
@@ -401,7 +430,10 @@ public class SubGenApp extends Application {
             format = XWPFDocument.PICTURE_TYPE_JPEG;
             r.addBreak();
             try {
-                r.addPicture(new FileInputStream(imgFile), format, imgFile, Units.toEMU(450), Units.toEMU(222));
+                r.getCTR().insertNewBr(1);
+                r.getCTR().insertNewBr(1);
+                r.addPicture(new FileInputStream(imgFile), format, imgFile, Units.toEMU(480), Units.toEMU(222));
+                p.setIndentationLeft(620);
             } catch (Exception a) {
                 System.err.println(a);
             }
@@ -428,9 +460,11 @@ public class SubGenApp extends Application {
             r1.setBold(true);
             r1.setFontFamily("Calibri (Body)");
 
+
             XWPFParagraph p2 = doc.createParagraph();
             p2.setAlignment(ParagraphAlignment.CENTER);
             p2.setVerticalAlignment(TextAlignment.BOTTOM);
+
             XWPFRun r2 = p2.createRun();
             r2.getCTR().insertNewBr(1);
             r2.getCTR().insertNewBr(1);
@@ -441,21 +475,27 @@ public class SubGenApp extends Application {
             r2.setFontFamily("Calibri (Body)");
             r2.addBreak(BreakType.PAGE);
 
+
             XWPFParagraph p3 = doc.createParagraph();
             p3.setAlignment(ParagraphAlignment.CENTER);
             p3.setVerticalAlignment(TextAlignment.TOP);
+
             XWPFRun r3 = p3.createRun();
             r3.setFontSize(22);
+            r3.getCTR().insertNewBr(1);
+            r3.getCTR().insertNewBr(1);
             r3.setUnderline(UnderlinePatterns.SINGLE);
             r3.setBold(true);
             r3.setText("Plumbing Submittal");
             r3.setBold(true);
             r3.setFontFamily("Calibri (Body)");
 
+
             XWPFParagraph p4 = doc.createParagraph();
             p4.setAlignment(ParagraphAlignment.LEFT);
-            p4.setIndentationLeft(3100);
+            p4.setIndentationLeft(4500);
             p4.setVerticalAlignment(TextAlignment.TOP);
+
             XWPFRun r4 = p4.createRun();
             r4.setFontSize(16);
             r4.setFontFamily("Calibri (Body)");
@@ -466,16 +506,19 @@ public class SubGenApp extends Application {
             r4.setBold(true);
             r4.setText("Project");
             r4.setBold(true);
+
             XWPFRun proName = p4.createRun();
             proName.setFontSize(14);
             proName.setFontFamily("Calibri (Body)");
             proName.getCTR().insertNewBr(1);
             proName.setText(job);
+
             XWPFRun proAdd1 = p4.createRun();
             proAdd1.setFontSize(12);
             proAdd1.setFontFamily("Calibri (Body)");
             proAdd1.getCTR().insertNewBr(1);
             proAdd1.setText(jobAdd1);
+
             XWPFRun proAdd2 = p4.createRun();
             proAdd2.setFontSize(12);
             proAdd2.setFontFamily("Calibri (Body)");
@@ -483,10 +526,12 @@ public class SubGenApp extends Application {
             proAdd2.setText(jobAdd2);
             p4.setSpacingAfter(1);
 
+
             XWPFParagraph p5 = doc.createParagraph();
             p5.setAlignment(ParagraphAlignment.LEFT);
-            p5.setIndentationLeft(3100);
+            p5.setIndentationLeft(4500);
             p5.setVerticalAlignment(TextAlignment.TOP);
+
             XWPFRun r6 = p5.createRun();
             r6.getCTR().insertNewBr(1);
             r6.getCTR().insertNewBr(1);
@@ -495,21 +540,25 @@ public class SubGenApp extends Application {
             r6.setBold(true);
             r6.setText("Architect");
             r6.setBold(true);
+
             XWPFRun archTitle = p5.createRun();
             archTitle.getCTR().insertNewBr(1);
             archTitle.setFontSize(14);
             archTitle.setFontFamily("Calibri (Body)");
             archTitle.setText(architectName);
+
             XWPFRun archAddress1 = p5.createRun();
             archAddress1.setFontSize(12);
             archAddress1.setFontFamily("Calibri (Body)");
             archAddress1.getCTR().insertNewBr(1);
             archAddress1.setText(architectAdd1);
+
             XWPFRun archAddress2 = p5.createRun();
             archAddress2.setFontSize(12);
             archAddress2.setFontFamily("Calibri (Body)");
             archAddress2.getCTR().insertNewBr(1);
             archAddress2.setText(architectAdd2);
+
             XWPFRun archPhoneNum = p5.createRun();
             archPhoneNum.setFontSize(12);
             archPhoneNum.setFontFamily("Calibri (Body)");
@@ -517,10 +566,12 @@ public class SubGenApp extends Application {
             archPhoneNum.setText(architectPhone);
             p5.setSpacingAfter(1);
 
+
             XWPFParagraph p6 = doc.createParagraph();
             p6.setAlignment(ParagraphAlignment.LEFT);
-            p6.setIndentationLeft(3100);
+            p6.setIndentationLeft(4500);
             p6.setVerticalAlignment(TextAlignment.TOP);
+
             XWPFRun r8 = p6.createRun();
             r8.getCTR().insertNewBr(1);
             r8.getCTR().insertNewBr(1);
@@ -529,21 +580,25 @@ public class SubGenApp extends Application {
             r8.setBold(true);
             r8.setText("General Contractor");
             r8.setBold(true);
+
             XWPFRun gcTitle = p6.createRun();
             gcTitle.getCTR().insertNewBr(1);
             gcTitle.setFontSize(14);
             gcTitle.setFontFamily("Calibri (Body)");
             gcTitle.setText(genConName);
+
             XWPFRun gcAddress1 = p6.createRun();
             gcAddress1.setFontSize(12);
             gcAddress1.setFontFamily("Calibri (Body)");
             gcAddress1.getCTR().insertNewBr(1);
             gcAddress1.setText(genConAdd1);
+
             XWPFRun gcAddress2 = p6.createRun();
             gcAddress2.setFontSize(12);
             gcAddress2.setFontFamily("Calibri (Body)");
             gcAddress2.getCTR().insertNewBr(1);
             gcAddress2.setText(genConAdd2);
+
             XWPFRun gcPhoneNum = p6.createRun();
             gcPhoneNum.setFontSize(12);
             gcPhoneNum.setFontFamily("Calibri (Body)");
@@ -551,10 +606,12 @@ public class SubGenApp extends Application {
             gcPhoneNum.setText(genConPhone);
             p6.setSpacingAfter(1);
 
+
             XWPFParagraph p7 = doc.createParagraph();
             p7.setAlignment(ParagraphAlignment.LEFT);
-            p7.setIndentationLeft(3100);
+            p7.setIndentationLeft(4500);
             p7.setVerticalAlignment(TextAlignment.TOP);
+
             XWPFRun r10 = p7.createRun();
             r10.getCTR().insertNewBr(1);
             r10.getCTR().insertNewBr(1);
@@ -563,21 +620,25 @@ public class SubGenApp extends Application {
             r10.setBold(true);
             r10.setText("SubContractor");
             r10.setBold(true);
+
             XWPFRun stascoName = p7.createRun();
             stascoName.getCTR().insertNewBr(1);
             stascoName.setFontSize(14);
             stascoName.setFontFamily("Calibri (Body)");
             stascoName.setText("Stasco Mechanical Contractors");
+
             XWPFRun stascoAdd1 = p7.createRun();
             stascoAdd1.setFontSize(12);
             stascoAdd1.setFontFamily("Calibri (Body)");
             stascoAdd1.getCTR().insertNewBr(1);
             stascoAdd1.setText("1391 Cobb Parkway North");
+
             XWPFRun stascoAdd2 = p7.createRun();
             stascoAdd2.setFontSize(12);
             stascoAdd2.setFontFamily("Calibri (Body)");
             stascoAdd2.getCTR().insertNewBr(1);
             stascoAdd2.setText("Marietta, Georgia 30062");
+
             XWPFRun stascoPhone = p7.createRun();
             stascoPhone.setFontSize(12);
             stascoPhone.setFontFamily("Calibri (Body)");
@@ -585,37 +646,29 @@ public class SubGenApp extends Application {
             stascoPhone.setText("770-422-7118");
             stascoPhone.addBreak(BreakType.PAGE);
 
-            /*
-            int numEntries = subSheets.size();
-            List<String> mainCatList = new ArrayList<>();
-            List<String> subCatList = new ArrayList<>();
-            List<String> subSheetList = new ArrayList<>();
-            for(int i = 0; i < numEntries; i++) {
-                if(subSheets.get(i).substring(0,2).equals("  ") && !subSheets.get(i).substring(0,4).equals("    ")) {
-                    subCatList.add(subSheets.get(i));
-                } else if(subSheets.get(i).substring(0,4).equals("    ")) {
-                    subSheetList.add(subSheets.get(i));
-                } else {
-                    mainCatList.add(subSheets.get(i));
-                }
-            }
-            */
+
 
             XWPFParagraph p8 = doc.createParagraph();
             p8.setAlignment(ParagraphAlignment.CENTER);
             p8.setVerticalAlignment(TextAlignment.TOP);
+
             XWPFRun r11 = p8.createRun();
             r11.setFontSize(22);
             r11.setFontFamily("Calibri (Body)");
+
+            r11.getCTR().insertNewBr(1);
+            r11.getCTR().insertNewBr(1);
+
             r11.setUnderline(UnderlinePatterns.SINGLE);
             r11.setBold(true);
             r11.setText("INDEX");
             r11.setBold(true);
 
             XWPFParagraph p9 = doc.createParagraph();
-            XWPFParagraph p10 = doc.createParagraph();
             p9.setAlignment(ParagraphAlignment.LEFT);
             p9.setVerticalAlignment(TextAlignment.TOP);
+            p9.setIndentationLeft(1080);
+
             String curNumString;
             int curNum = 0;
             int curSubNum = 1;
@@ -625,49 +678,37 @@ public class SubGenApp extends Application {
                 XWPFRun r12 = p9.createRun();
                 r12.setFontSize(14);
                 r12.setFontFamily("Calibri (Body)");
+
                 if (!subSheets.get(i).substring(0, 2).equals("  ")) {
-                    if(curNum == 0) {
-                        r12.getCTR().insertNewBr(1);
-                    }
                     r12.getCTR().insertNewBr(1);
                     r12.getCTR().insertNewBr(1);
+
                     newCat = true;
                     curSubNum = 1;
                     curNum += 1;
+
                     curNumString = curNum + ") ";
                     r12.setBold(true);
                     r12.setText(curNumString + subSheets.get(i));
                     r12.setBold(true);
-                    if(curNum == 2) {
-                        //r12.addBreak(BreakType.);
-                    }
 
                 }
-                if (subSheets.get(i).substring(0, 2).equals("  ") && !subSheets.get(i).substring(0, 4).equals("    ")) {
+                if (subSheets.get(i).substring(0, 2).equals("  ") && (!subSheets.get(i).substring(0, 4).equals("    ") || subSheets.get(i).length() < 4)) {
+
                     if(newCat){
                         r12.setFontSize(12);
                         r12.setFontFamily("Calibri (Body)");
+
                         if(curSubNum == 1) {
                             r12.getCTR().insertNewBr(1);
                         }
                         r12.getCTR().insertNewBr(1);
+
                         curNumString = "     " + String.valueOf((char) (curSubNum + 64)) + ". ";
                         r12.setText(curNumString + subSheets.get(i));
                         curSubNum += 1;
-                    } /*else {
-                        XWPFRun r14 = p10.createRun();
-                        r14.setFontSize(12);
-                        r14.setFontFamily("Calibri (Body)");
-                        r14.getCTR().insertNewBr(1);
-                        curNumString = "     " + String.valueOf((char) (curSubNum + 64)) + ". ";
-                        r14.setText(curNumString + subSheets.get(i));
-                        curSubNum += 1;
-                    }*/
+                    }
 
-                }
-
-                if (i == subSheets.size() - 1) {
-                    r12.addBreak(BreakType.PAGE);
                 }
 
 
@@ -681,72 +722,166 @@ public class SubGenApp extends Application {
             curNum = 1;
             curSubNum = 1;
             newCat = false;
-            boolean newMain = true;
-            XWPFParagraph p11 = doc.createParagraph();
+            List<Integer> list = new ArrayList<>();
+            int numDocs = 0;
+            String subHeader = "";
+            int subNumber = 0;
+            int lastMain = 0;
 
             for (int i = 0; i < subSheets.size(); i++) {
-                if (!subSheets.get(i).substring(0, 2).equals("  ")) {
-                    XWPFRun r13 = p11.createRun();
-                    if(curNum != 1) {
-                        r13.addBreak(BreakType.PAGE);
-                        /*for (int j = 0; j < subSheets.size(); j++) {
+
+                if (!subSheets.get(i).substring(0, 2).equals("  ") || i == subSheets.size()-1) {
+
+                    if(i == subSheets.size() - 1) {
+
+                        XWPFParagraph p11 = doc.createParagraph();
+                        p11.setSpacingAfter(0);
+                        p11.setSpacingBefore(0);
+
+                        XWPFRun r15 = p11.createRun();
+                        r15.setFontSize(12);
+                        r15.setFontFamily("Calibri (Body)");
+
+                        if (newCat) {
+                            r15.getCTR().insertNewBr(1);
+                        }
+
+                        slashIndex = subSheets.get(i).lastIndexOf('\\') + 1;
+                        dotIndex = subSheets.get(i).lastIndexOf('.');
+                        if (subSheets.get(i).contains(slash)) {
+                            file = subSheets.get(i).substring(slashIndex, dotIndex);
+                        } else {
+                            file = subSheets.get(i);
+                        }
+                        r15.setText("                                   " + file);
+
+                        newCat = false;
+                    }
+
+                    if(i != 0) {
+
+                        for (int j = lastMain; j <= i; j++) {
+
+                            if(subSheets.get(j).substring(0, 2).equals("  ") && !subSheets.get(j).substring(0, 4).equals("    ")) {
+                                subNumber++;
+                                subHeader = subSheets.get(j);
+                            }
+
                             if(subSheets.get(j).substring(0, 4).equals("    ")) {
+
                                 try {
                                     XWPFDocument subDoc = new XWPFDocument(new FileInputStream(subSheets.get(j).substring(4)));
                                     List<XWPFPictureData> pic = subDoc.getAllPictures();
-                                    BufferedImage jpg = null;
+
+
                                     for(int k = 0; k < pic.size(); k++) {
-                                        XWPFParagraph picPar = doc.createParagraph();
-                                        XWPFRun picRun = p.createRun();
+                                        XWPFParagraph p11 = doc.createParagraph();
+                                        p11.setAlignment(ParagraphAlignment.RIGHT);
+
+                                        XWPFRun picRun = p11.createRun();
+
+                                        slashIndex = subSheets.get(j).lastIndexOf('\\') + 1;
+                                        dotIndex = subSheets.get(j).lastIndexOf('.');
+                                        file = subSheets.get(j).substring(slashIndex, dotIndex);
+
+                                        CTShd cTShd = picRun.getCTR().addNewRPr().addNewShd();
+                                        cTShd.setVal(STShd.CLEAR);
+                                        cTShd.setColor("auto");
+                                        cTShd.setFill("FFFF9e");
+
+                                        picRun.addBreak(BreakType.PAGE);
+                                        picRun.setFontSize(14);
+                                        picRun.setText(curNum-1 + "-" + String.valueOf((char) (subNumber + 64)) + ") " + subHeader);
+
+                                        BufferedImage oldJpg;
                                         XWPFPictureData pict = pic.get(k);
-                                        String extract = pict.suggestFileExtension();
                                         byte[] data = pict.getData();
-                                        //try to read image data using javax.imageio.* (JDK 1.4+)
-                                        jpg = ImageIO.read(new ByteArrayInputStream(data));
-                                        picRun.addPicture(new FileInputStream(pic.get(k)), XWPFDocument.PICTURE_TYPE_JPEG, subSheets.get(j), Units.toEMU(800), Units.toEMU(1200));
+                                        oldJpg = ImageIO.read(new ByteArrayInputStream(data));
+                                        int w = oldJpg.getWidth();
+                                        int h = oldJpg.getHeight();
+                                        BufferedImage newJpg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                                        int[] rgb = oldJpg.getRGB(0,0,w,h,null,0,w);
+                                        newJpg.setRGB(0,0,w,h,rgb,0,w);;
+                                        File out = new File("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + k + ".jpg");
+                                        ImageIO.write(newJpg, "jpg", out);
+                                        picRun.addPicture(new FileInputStream("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + k + ".jpg"), XWPFDocument.PICTURE_TYPE_JPEG, subSheets.get(j), Units.toEMU(610), Units.toEMU(770));
                                     }
+
                                 } catch (Exception notFile) {
                                     System.err.println(notFile);
                                 }
                             }
-                        }*/
+
+                        }
+                        subNumber = 0;
+                        list.clear();
                     }
-                    p11.setAlignment(ParagraphAlignment.LEFT);
-                    p11.setVerticalAlignment(TextAlignment.TOP);
-                    p11.setIndentationLeft(1000);
-                    r13.getCTR().insertNewBr(1);
-                    r13.getCTR().insertNewBr(1);
-                    r13.getCTR().insertNewBr(1);
-                    r13.getCTR().insertNewBr(1);
-                    r13.getCTR().insertNewBr(1);
-                    r13.getCTR().insertNewBr(1);
-                    r13.getCTR().insertNewBr(1);
-                    r13.setFontSize(20);
-                    r13.setFontFamily("Calibri (Body)");
-                    curNumString = curNum + ")      ";
-                    r13.setBold(true);
-                    r13.setText(curNumString + subSheets.get(i));
-                    r13.setBold(true);
-                    curSubNum = 1;
-                    curNum += 1;
+
+                    if(i != subSheets.size() - 1) {
+                        XWPFParagraph p11 = doc.createParagraph();
+                        p11.setAlignment(ParagraphAlignment.LEFT);
+                        p11.setVerticalAlignment(TextAlignment.TOP);
+                        p11.setSpacingAfter(0);
+                        p11.setSpacingBefore(0);
+
+                        XWPFRun r13 = p11.createRun();
+                        r13.setFontSize(20);
+                        r13.setFontFamily("Calibri (Body)");
+
+                        r13.addBreak(BreakType.PAGE);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+                        r13.getCTR().insertNewBr(1);
+
+                        curNumString = "                " + curNum + ")      ";
+                        r13.setBold(true);
+                        r13.setText(curNumString + subSheets.get(i));
+                        r13.setBold(true);
+                        curSubNum = 1;
+                        curNum += 1;
+                    }
+                    lastMain = i;
+
                 } else if (subSheets.get(i).substring(0, 2).equals("  ") && !subSheets.get(i).substring(0, 4).equals("    ")) {
+
+                    list.add(numDocs);
+                    numDocs = 0;
                     newCat = true;
+
+                    XWPFParagraph p11 = doc.createParagraph();
+                    p11.setSpacingAfter(0);
+                    p11.setSpacingBefore(0);
+
                     XWPFRun r14 = p11.createRun();
                     r14.setFontSize(16);
                     r14.setFontFamily("Calibri (Body)");
+
                     r14.getCTR().insertNewBr(1);
-                    r14.getCTR().insertNewBr(1);
-                    curNumString = "     " + String.valueOf((char) (curSubNum + 64)) + ". ";
+
+                    curNumString = "                    " + String.valueOf((char) (curSubNum + 64)) + ". ";
                     r14.setText(curNumString + subSheets.get(i));
                     curSubNum += 1;
+
                 } else {
+                    numDocs++;
+                    XWPFParagraph p11 = doc.createParagraph();
+                    p11.setSpacingAfter(0);
+                    p11.setSpacingBefore(0);
+
                     XWPFRun r15 = p11.createRun();
                     r15.setFontSize(12);
                     r15.setFontFamily("Calibri (Body)");
+
                     if (newCat) {
                         r15.getCTR().insertNewBr(1);
                     }
-                    r15.getCTR().insertNewBr(1);
+
                     slashIndex = subSheets.get(i).lastIndexOf('\\') + 1;
                     dotIndex = subSheets.get(i).lastIndexOf('.');
                     if (subSheets.get(i).contains(slash)) {
@@ -754,142 +889,26 @@ public class SubGenApp extends Application {
                     } else {
                         file = subSheets.get(i);
                     }
-                    r15.setText("                 " + file);
-
-
+                    r15.setText("                                   " + file);
                     newCat = false;
                 }
 
-                /*
-
-
-                for (int j = 0; j < subSheets.size(); j++) {
-                    XWPFRun r14 = p10.createRun();
-                    r14.setFontSize(16);
-                    r14.setFontFamily("Calibri (Body)");
-                    r14.getCTR().insertNewBr(1);
-                    r14.getCTR().insertNewBr(1);
-                    curNum = j + 1;
-                    curNumString = "     " + String.valueOf((char) (curNum + 64)) + ". ";
-                    r14.setText(curNumString + subSheets.get(j));
-
-                    for (int k = 0; k < subSheets.size(); k++) {
-                        XWPFRun r15 = p10.createRun();
-                        r15.setFontSize(12);
-                        r15.setFontFamily("Calibri (Body)");
-                        if (k == 0) {
-                            r15.getCTR().insertNewBr(1);
-                        }
-                        r15.getCTR().insertNewBr(1);
-                        slashIndex = subSheets.get(k).lastIndexOf('\\') + 1;
-                        dotIndex = subSheets.get(k).lastIndexOf('.');
-                        if (subSheets.get(k).contains(slash)) {
-                            file = subSheets.get(k).substring(slashIndex, dotIndex);
-                        } else {
-                            file = subSheets.get(k);
-                        }
-                        r15.setText("                 " + file);
-
-                        if (j == subCatList.size() - 1 && k == subSheetList.size() - 1) {
-                            r15.addBreak(BreakType.PAGE);
-                        }
-                    }
-                }
-            */
-
             }
 
-
-            /*
-            for (int i = 0; i < mainCatList.size(); i++) {
-                XWPFRun r12 = p9.createRun();
-                r12.setFontSize(14);
-                r12.setFontFamily("Calibri (Body)");
-                r12.getCTR().insertNewBr(1);
-                r12.getCTR().insertNewBr(1);
-                r12.getCTR().insertNewBr(1);
-                curNum = i + 1;
-                curNumString = curNum + ") ";
-                r12.setBold(true);
-                r12.setText(curNumString + mainCatList.get(i));
-                r12.setBold(true);
-                if (i == mainCatList.size() - 1) {
-                    r12.addBreak(BreakType.PAGE);
-                }
-            }
-
-            String file;
-            int slashIndex;
-            int dotIndex;
-            CharBuffer slash = CharBuffer.allocate(1);
-            slash.append('\\');
-
-            for (int i = 0; i < mainCatList.size(); i++) {
-                XWPFParagraph p10 = doc.createParagraph();
-                p10.setAlignment(ParagraphAlignment.LEFT);
-                p10.setVerticalAlignment(TextAlignment.TOP);
-                p10.setIndentationLeft(1000);
-                XWPFRun r13 = p10.createRun();
-                r13.getCTR().insertNewBr(1);
-                r13.getCTR().insertNewBr(1);
-                r13.getCTR().insertNewBr(1);
-                r13.getCTR().insertNewBr(1);
-                r13.getCTR().insertNewBr(1);
-                r13.getCTR().insertNewBr(1);
-                r13.getCTR().insertNewBr(1);
-                r13.setFontSize(20);
-                r13.setFontFamily("Calibri (Body)");
-                curNum = i + 1;
-                curNumString = curNum + ")      ";
-                r13.setBold(true);
-                r13.setText(curNumString + mainCatList.get(i));
-                r13.setBold(true);
-
-
-                for (int j = 0; j < subCatList.size(); j++) {
-                    XWPFRun r14 = p10.createRun();
-                    r14.setFontSize(16);
-                    r14.setFontFamily("Calibri (Body)");
-                    r14.getCTR().insertNewBr(1);
-                    r14.getCTR().insertNewBr(1);
-                    curNum = j + 1;
-                    curNumString = "     " + String.valueOf((char) (curNum + 64)) + ". ";
-                    r14.setText(curNumString + subCatList.get(j));
-
-                    for (int k = 0; k < subSheetList.size(); k++) {
-                        XWPFRun r15 = p10.createRun();
-                        r15.setFontSize(12);
-                        r15.setFontFamily("Calibri (Body)");
-                        if (k == 0) {
-                            r15.getCTR().insertNewBr(1);
-                        }
-                        r15.getCTR().insertNewBr(1);
-                        slashIndex = subSheetList.get(k).lastIndexOf('\\') + 1;
-                        dotIndex = subSheetList.get(k).lastIndexOf('.');
-                        if (subSheetList.get(k).contains(slash)) {
-                            file = subSheetList.get(k).substring(slashIndex, dotIndex);
-                        } else {
-                            file = subSheetList.get(k);
-                        }
-                        r15.setText("                 " + file);
-
-                        if (j == subCatList.size() - 1 && k == subSheetList.size() - 1) {
-                            r15.addBreak(BreakType.PAGE);
-                        }
-                    }
-                }
-
-
-            }
-
-        */
-            try (FileOutputStream out = new FileOutputStream("simple1.docx")) {
+            try (FileOutputStream out = new FileOutputStream("simple.docx")) {
                 doc.write(out);
             } catch(Exception f) {
                 System.err.println();
             }
 
+            File tempFolder = new File("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages");
+            try {
+                FileUtils.cleanDirectory(tempFolder);
+            } catch(IOException noFolder) {
+                System.err.println(noFolder);
+            }
 
+            window.close();
         });
         HBox nextBtn = new HBox(10);
         nextBtn.setAlignment(Pos.BOTTOM_RIGHT);
@@ -897,44 +916,19 @@ public class SubGenApp extends Application {
         grid.add(nextBtn, 1, 12);
 
         window.setScene(scene1);
-    }
 
-    public void createScene2() {
-        Label title = new Label();
-        title.setText(jobAdd1);
 
-        // button showing pending request
-        Button button = new Button();
-        button.setText("NextAgain");
-        // switch to scene 2
-        button.setOnAction(e -> {
-
-        });
-
-        // Layout 1 and adding elements to the layout
-        VBox layout2 = new VBox(200);
-        layout2.getChildren().addAll(title, button);
-        layout2.setAlignment(Pos.CENTER);
-
-        // setting the layout size for the first scene
-        scene2 = new Scene(layout2, 1200, 950);
-        window.setScene(scene2);
     }
 
     public static void main(String[] args) {
         launch(args);
-        for (int i = 0; i < subSheets.size(); i++) {
-            System.out.println(subSheets.get(i));
-            System.out.println(subSheetsImages.get(i));
-        }
-
     }
 
     private class FileCell extends ListCell<String> {
         private final ImageView imageView = new ImageView();
 
         public FileCell() {
-            ListCell thisCell = this;
+            ListCell<String> thisCell = this;
 
             setAlignment(Pos.CENTER_LEFT);
 
