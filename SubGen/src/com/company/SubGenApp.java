@@ -5,12 +5,14 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -20,9 +22,14 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.image.ImageView;
 import org.apache.commons.io.FileUtils;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -40,7 +47,13 @@ public class SubGenApp extends Application {
 
     private static ObservableList<String> subSheets = FXCollections.observableArrayList();
 
-    private static final ObservableList<Image> subSheetsImages = FXCollections.observableArrayList();
+    private static ObservableList<Image> subSheetsImages = FXCollections.observableArrayList();
+
+    private static List<byte[]> byteList = new ArrayList<byte[]>();
+
+    private static List<byte[]> byteListRead = new ArrayList<byte[]>();
+
+    private static List<BufferedImage> buffList = new ArrayList<BufferedImage>();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -224,8 +237,53 @@ public class SubGenApp extends Application {
         hbBtn.getChildren().add(btn);
         grid.add(hbBtn, 1, 12);
 
+        Button loadLastInfo = new Button("Load Last");
+        HBox loadLastInfoHB = new HBox(10);
+        loadLastInfoHB.setAlignment(Pos.BOTTOM_LEFT);
+        loadLastInfoHB.getChildren().add(loadLastInfo);
+        grid.add(loadLastInfoHB, 0, 12);
+
         final Text actiontarget = new Text();
         grid.add(actiontarget, 1, 13);
+
+        loadLastInfo.setOnAction(e -> {
+            try {
+                FileInputStream fis = new FileInputStream("Objectsavefile.ser");
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                String[] savedInfo = (String[]) ois.readObject();
+                ois.close();
+
+                pnField.setText(savedInfo[0]);
+                pAdd1.setText(savedInfo[1]);
+                pAdd2.setText(savedInfo[2]);
+                archNameField.setText(savedInfo[3]);
+                aAdd1.setText(savedInfo[4]);
+                aAdd2.setText(savedInfo[5]);
+                archPhoneField.setText(savedInfo[6]);
+                gcNameField.setText(savedInfo[7]);
+                gAdd1.setText(savedInfo[8]);
+                gAdd2.setText(savedInfo[9]);
+                gcPhoneField.setText(savedInfo[10]);
+
+            } catch (IOException savedInfoLoadE) {
+                savedInfoLoadE.printStackTrace();
+            } catch (ClassNotFoundException noClass) {
+                noClass.printStackTrace();
+            }
+
+            job = pnField.getText();
+            jobAdd1 = pAdd1.getText();
+            jobAdd2 = pAdd2.getText();
+            architectName = archNameField.getText();
+            architectAdd1 = aAdd1.getText();
+            architectAdd2 = aAdd2.getText();
+            architectPhone = archPhoneField.getText();
+            genConName = gcNameField.getText();
+            genConAdd1 = gAdd1.getText();
+            genConAdd2 = gAdd2.getText();
+            genConPhone = gcPhoneField.getText();
+
+        });
 
         btn.setOnAction(e -> {
             job = pnField.getText();
@@ -239,6 +297,33 @@ public class SubGenApp extends Application {
             genConAdd1 = gAdd1.getText();
             genConAdd2 = gAdd2.getText();
             genConPhone = gcPhoneField.getText();
+
+            String[] savedInfo = new String[11];
+            savedInfo[0] = pnField.getText();
+            savedInfo[1] = pAdd1.getText();
+            savedInfo[2] = pAdd2.getText();
+            savedInfo[3] = archNameField.getText();
+            savedInfo[4] = aAdd1.getText();
+            savedInfo[5] = aAdd2.getText();
+            savedInfo[6] = archPhoneField.getText();
+            savedInfo[7] = gcNameField.getText();
+            savedInfo[8] = gAdd1.getText();
+            savedInfo[9] = gAdd2.getText();
+            savedInfo[10] = gcPhoneField.getText();
+
+            try {
+                FileOutputStream fos = new FileOutputStream("Objectsavefile.ser");
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(savedInfo);
+                oos.close();
+
+
+            } catch (FileNotFoundException savedInfoE) {
+                savedInfoE.printStackTrace();
+            } catch (IOException savedInfoE) {
+                savedInfoE.printStackTrace();
+            }
+
             createScene1();
         });
 
@@ -270,6 +355,44 @@ public class SubGenApp extends Application {
         Button addSub = new Button();
         addSub.setText("Add Sub Category");
 
+        Button loadLastList = new Button("Load Last");
+        HBox loadLastListHB = new HBox(10);
+        loadLastListHB.setAlignment(Pos.BOTTOM_LEFT);
+        loadLastListHB.getChildren().add(loadLastList);
+        grid.add(loadLastListHB, 0, 12);
+
+        ListView<String> fileListView = new ListView<>(subSheets);
+
+        loadLastList.setOnAction(e -> {
+            try {
+                FileInputStream fis = new FileInputStream("Objectsavefile1.ser");
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                List<String> loadSubList = (List<String>) ois.readObject();
+                subSheets = FXCollections.observableList(loadSubList);
+                ois.close();
+
+
+                FileInputStream fis2 = new FileInputStream("Objectsavefile2.ser");
+                ObjectInputStream ois2 = new ObjectInputStream(fis2);
+                byteListRead = (List<byte[]>) ois2.readObject();
+                for (int z = 0; z < byteListRead.size(); z++) {
+                    InputStream in = new ByteArrayInputStream(byteListRead.get(z));
+                    BufferedImage buffIm = ImageIO.read(in);
+                    subSheetsImages.clear();
+                    subSheetsImages.add(SwingFXUtils.toFXImage(buffIm,null));
+                    File outFile = new File("imageTest" + z);
+                    ImageIO.write(buffIm, "jpg", outFile);
+                }
+                createScene1();
+
+
+            } catch (IOException savedInfoLoadE) {
+                savedInfoLoadE.printStackTrace();
+            } catch (ClassNotFoundException noClass) {
+                noClass.printStackTrace();
+            }
+
+        });
 
         grid.add(mainCatLabel, 0, 1);
         grid.add(subCatLabel, 1, 1);
@@ -277,7 +400,7 @@ public class SubGenApp extends Application {
         grid.add(subCatField, 1, 2);
 
 
-        ListView<String> fileListView = new ListView<>(subSheets);
+
 
         HBox mainBtn = new HBox(10);
         mainBtn.getChildren().add(addMain);
@@ -291,6 +414,29 @@ public class SubGenApp extends Application {
                 subSheets.add(mainCatField.getText());
                 System.out.println(subSheets);
                 System.out.println(subSheetsImages);
+                try {
+                    FileOutputStream fosMain = new FileOutputStream("Objectsavefile1.ser");
+                    ObjectOutputStream oosMain = new ObjectOutputStream(fosMain);
+                    oosMain.writeObject(new ArrayList<String>(subSheets));
+                    oosMain.close();
+
+                    BufferedImage serImage = SwingFXUtils.fromFXImage(t.snapshot(null,null), null);
+                    ByteArrayOutputStream s = new ByteArrayOutputStream();
+                    ImageIO.write(serImage, "png", s);
+                    byte[] res  = s.toByteArray();
+                    byteList.add(res);
+                    s.close();
+                    FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                    ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                    oosMain2.writeObject(byteList);
+                    oosMain2.close();
+
+
+                } catch (FileNotFoundException mainSave) {
+                    mainSave.printStackTrace();
+                } catch (IOException mainSave) {
+                    mainSave.printStackTrace();
+                }
             }
         });
 
@@ -308,6 +454,29 @@ public class SubGenApp extends Application {
                 subSheets.add("  " + subCatField.getText());
                 System.out.println(subSheets);
                 System.out.println(subSheetsImages);
+                try {
+                    FileOutputStream fosSubStandard = new FileOutputStream("Objectsavefile1.ser");
+                    ObjectOutputStream oosSubStandard = new ObjectOutputStream(fosSubStandard);
+                    oosSubStandard.writeObject(new ArrayList<String>(subSheets));
+                    oosSubStandard.close();
+
+                    BufferedImage serImage = SwingFXUtils.fromFXImage(t.snapshot(null,null), null);
+                    ByteArrayOutputStream s = new ByteArrayOutputStream();
+                    ImageIO.write(serImage, "png", s);
+                    byte[] res  = s.toByteArray();
+                    byteList.add(res);
+                    s.close();
+                    FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                    ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                    oosMain2.writeObject(byteList);
+                    oosMain2.close();
+
+
+                } catch (FileNotFoundException mainSave) {
+                    mainSave.printStackTrace();
+                } catch (IOException mainSave) {
+                    mainSave.printStackTrace();
+                }
             } else if (!subCatField.getText().isEmpty()  && subSheets.contains("  " + subCatField.getText())) {
                 track++;
                 for(int i = 0; i < track; i++) {
@@ -318,6 +487,29 @@ public class SubGenApp extends Application {
                 subSheets.add("  " + subCatField.getText());
                 System.out.println(subSheets);
                 System.out.println(subSheetsImages);
+                try {
+                    FileOutputStream fosSubAddSpace = new FileOutputStream("Objectsavefile1.ser");
+                    ObjectOutputStream oosSubAddSpace = new ObjectOutputStream(fosSubAddSpace);
+                    oosSubAddSpace.writeObject(new ArrayList<String>(subSheets));
+                    oosSubAddSpace.close();
+
+                    BufferedImage serImage = SwingFXUtils.fromFXImage(t.snapshot(null,null), null);
+                    ByteArrayOutputStream s = new ByteArrayOutputStream();
+                    ImageIO.write(serImage, "png", s);
+                    byte[] res  = s.toByteArray();
+                    byteList.add(res);
+                    s.close();
+                    FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                    ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                    oosMain2.writeObject(byteList);
+                    oosMain2.close();
+
+
+                } catch (FileNotFoundException mainSave) {
+                    mainSave.printStackTrace();
+                } catch (IOException mainSave) {
+                    mainSave.printStackTrace();
+                }
             }
         });
 
@@ -334,6 +526,24 @@ public class SubGenApp extends Application {
                 int index = fileListView.getSelectionModel().getSelectedIndex();
                 fileListView.getItems().remove(index);
                 subSheetsImages.remove(index);
+                try {
+                    FileOutputStream fosDeleteButton = new FileOutputStream("Objectsavefile1.ser");
+                    ObjectOutputStream oosDeleteButton = new ObjectOutputStream(fosDeleteButton);
+                    oosDeleteButton.writeObject(new ArrayList<String>(subSheets));
+                    oosDeleteButton.close();
+
+                    byteList.remove(index);
+                    FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                    ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                    oosMain2.writeObject(byteList);
+                    oosMain2.close();
+
+
+                } catch (FileNotFoundException mainSave) {
+                    mainSave.printStackTrace();
+                } catch (IOException mainSave) {
+                    mainSave.printStackTrace();
+                }
 
             }
         });
@@ -350,6 +560,24 @@ public class SubGenApp extends Application {
                     int index = fileListView.getSelectionModel().getSelectedIndex();
                     fileListView.getItems().remove(index);
                     subSheetsImages.remove(index);
+                    try {
+                        FileOutputStream fosDeleteClick = new FileOutputStream("Objectsavefile1.ser");
+                        ObjectOutputStream oosDeleteClick = new ObjectOutputStream(fosDeleteClick);
+                        oosDeleteClick.writeObject(new ArrayList<String>(subSheets));
+                        oosDeleteClick.close();
+
+                        byteList.remove(index);
+                        FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                        ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                        oosMain2.writeObject(byteList);
+                        oosMain2.close();
+
+
+                    } catch (FileNotFoundException mainSave) {
+                        mainSave.printStackTrace();
+                    } catch (IOException mainSave) {
+                        mainSave.printStackTrace();
+                    }
                 }
             }
         });
@@ -387,6 +615,29 @@ public class SubGenApp extends Application {
                             subSheets.add(filePath);
                             System.out.println(subSheets);
                             System.out.println(subSheetsImages);
+                            try {
+                                FileOutputStream fosDropped = new FileOutputStream("Objectsavefile1.ser");
+                                ObjectOutputStream oosDropped = new ObjectOutputStream(fosDropped);
+                                oosDropped.writeObject(new ArrayList<String>(subSheets));
+                                oosDropped.close();
+
+                                BufferedImage serImage = SwingFXUtils.fromFXImage(t.snapshot(null,null), null);
+                                ByteArrayOutputStream s = new ByteArrayOutputStream();
+                                ImageIO.write(serImage, "png", s);
+                                byte[] res  = s.toByteArray();
+                                byteList.add(res);
+                                s.close();
+                                FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                                ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                                oosMain2.writeObject(byteList);
+                                oosMain2.close();
+
+
+                            } catch (FileNotFoundException mainSave) {
+                                mainSave.printStackTrace();
+                            } catch (IOException mainSave) {
+                                mainSave.printStackTrace();
+                            }
                         } else {
                             track++;
                             filePath = "    " + file.getAbsolutePath();
@@ -398,6 +649,29 @@ public class SubGenApp extends Application {
                             subSheets.add(filePath);
                             System.out.println(subSheets);
                             System.out.println(subSheetsImages);
+                            try {
+                                FileOutputStream fosDroppedAddSpace = new FileOutputStream("Objectsavefile1.ser");
+                                ObjectOutputStream oosDroppedAddSpace = new ObjectOutputStream(fosDroppedAddSpace);
+                                oosDroppedAddSpace.writeObject(new ArrayList<String>(subSheets));
+                                oosDroppedAddSpace.close();
+
+                                BufferedImage serImage = SwingFXUtils.fromFXImage(t.snapshot(null,null), null);
+                                ByteArrayOutputStream s = new ByteArrayOutputStream();
+                                ImageIO.write(serImage, "png", s);
+                                byte[] res  = s.toByteArray();
+                                byteList.add(res);
+                                s.close();
+                                FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                                ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                                oosMain2.writeObject(byteList);
+                                oosMain2.close();
+
+
+                            } catch (FileNotFoundException mainSave) {
+                                mainSave.printStackTrace();
+                            } catch (IOException mainSave) {
+                                mainSave.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -770,42 +1044,110 @@ public class SubGenApp extends Application {
                             if(subSheets.get(j).substring(0, 4).equals("    ")) {
 
                                 try {
-                                    XWPFDocument subDoc = new XWPFDocument(new FileInputStream(subSheets.get(j).substring(4)));
-                                    List<XWPFPictureData> pic = subDoc.getAllPictures();
+                                    System.out.println("Numba 1");
+                                    System.out.println(subSheets.get(j).substring(subSheets.get(j).lastIndexOf('.')));
+                                    if(subSheets.get(j).substring(subSheets.get(j).lastIndexOf('.')).equals(".pdf")) {
+                                        System.out.println("Numba 2");
+                                        try {
+                                            System.out.println("Im trying");
+                                            String sourceDir;
+                                            System.out.println(subSheets.get(j).charAt(4));
+                                            if(subSheets.get(j).charAt(4) == 'C') {
+                                                sourceDir = subSheets.get(j).substring(4);
+                                            } else {
+                                                sourceDir = subSheets.get(j).substring(4);
+                                            }
 
+                                            File sourceFile = new File(sourceDir);
+                                            System.out.println("WILL I EXIST?");
+                                            if (sourceFile.exists()) {
+                                                System.out.println("I EXIST");
+                                                PDDocument document = PDDocument.load(new File(sourceDir));
+                                                PDFRenderer pdfRenderer = new PDFRenderer(document);
+                                                @SuppressWarnings("unchecked")
+                                                String fileName = sourceFile.getName().replace(".pdf", "");
+                                                int pageNumber = 0;
+                                                for (PDPage page : document.getPages()) {
+                                                    System.out.println("going through pdf pages");
+                                                    BufferedImage image = pdfRenderer.renderImageWithDPI(pageNumber, 300, ImageType.RGB);
+                                                    XWPFParagraph p11 = doc.createParagraph();
+                                                    p11.setAlignment(ParagraphAlignment.RIGHT);
 
-                                    for(int k = 0; k < pic.size(); k++) {
-                                        XWPFParagraph p11 = doc.createParagraph();
-                                        p11.setAlignment(ParagraphAlignment.RIGHT);
+                                                    XWPFRun picRun = p11.createRun();
 
-                                        XWPFRun picRun = p11.createRun();
+                                                    slashIndex = subSheets.get(j).lastIndexOf('\\') + 1;
+                                                    dotIndex = subSheets.get(j).lastIndexOf('.');
+                                                    file = subSheets.get(j).substring(slashIndex, dotIndex);
 
-                                        slashIndex = subSheets.get(j).lastIndexOf('\\') + 1;
-                                        dotIndex = subSheets.get(j).lastIndexOf('.');
-                                        file = subSheets.get(j).substring(slashIndex, dotIndex);
+                                                    CTShd cTShd = picRun.getCTR().addNewRPr().addNewShd();
+                                                    cTShd.setVal(STShd.CLEAR);
+                                                    cTShd.setColor("auto");
+                                                    cTShd.setFill("FFFF9e");
 
-                                        CTShd cTShd = picRun.getCTR().addNewRPr().addNewShd();
-                                        cTShd.setVal(STShd.CLEAR);
-                                        cTShd.setColor("auto");
-                                        cTShd.setFill("FFFF9e");
+                                                    picRun.addBreak(BreakType.PAGE);
+                                                    picRun.setFontSize(14);
+                                                    picRun.setText(curNum-1 + "-" + String.valueOf((char) (subNumber + 64)) + ") " + subHeader);
 
-                                        picRun.addBreak(BreakType.PAGE);
-                                        picRun.setFontSize(14);
-                                        picRun.setText(curNum-1 + "-" + String.valueOf((char) (subNumber + 64)) + ") " + subHeader);
+                                                    int w = image.getWidth();
+                                                    int h = image.getHeight();
+                                                    BufferedImage newJpg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                                                    int[] rgb = image.getRGB(0,0,w,h,null,0,w);
+                                                    newJpg.setRGB(0,0,w,h,rgb,0,w);;
+                                                    //File out = new File("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + pageNumber + ".jpg");
+                                                    ImageIOUtil.writeImage(image, "C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + pageNumber + ".jpg", 300);
+                                                    picRun.addPicture(new FileInputStream("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + pageNumber + ".jpg"), XWPFDocument.PICTURE_TYPE_JPEG, subSheets.get(j), Units.toEMU(610), Units.toEMU(770));
+                                                    pageNumber++;
+                                                    }
+                                                    document.close();
+                                                } else {
+                                                System.err.println(sourceFile.getName() +" File doesn't exist");
+                                                }
+                                        } catch (Exception pdfNot) {
+                                            pdfNot.printStackTrace();
+                                            System.out.println("pdf recognized but cant do anything");
+                                        }
 
-                                        BufferedImage oldJpg;
-                                        XWPFPictureData pict = pic.get(k);
-                                        byte[] data = pict.getData();
-                                        oldJpg = ImageIO.read(new ByteArrayInputStream(data));
-                                        int w = oldJpg.getWidth();
-                                        int h = oldJpg.getHeight();
-                                        BufferedImage newJpg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-                                        int[] rgb = oldJpg.getRGB(0,0,w,h,null,0,w);
-                                        newJpg.setRGB(0,0,w,h,rgb,0,w);;
-                                        File out = new File("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + k + ".jpg");
-                                        ImageIO.write(newJpg, "jpg", out);
-                                        picRun.addPicture(new FileInputStream("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + k + ".jpg"), XWPFDocument.PICTURE_TYPE_JPEG, subSheets.get(j), Units.toEMU(610), Units.toEMU(770));
+                                    } else {
+                                        System.out.println("Numba 3");
+                                        XWPFDocument subDoc = new XWPFDocument(new FileInputStream(subSheets.get(j).substring(4)));
+                                        List<XWPFPictureData> pic = subDoc.getAllPictures();
+
+                                        for(int k = 0; k < pic.size(); k++) {
+                                            XWPFParagraph p11 = doc.createParagraph();
+                                            p11.setAlignment(ParagraphAlignment.RIGHT);
+
+                                            XWPFRun picRun = p11.createRun();
+
+                                            slashIndex = subSheets.get(j).lastIndexOf('\\') + 1;
+                                            dotIndex = subSheets.get(j).lastIndexOf('.');
+                                            file = subSheets.get(j).substring(slashIndex, dotIndex);
+
+                                            CTShd cTShd = picRun.getCTR().addNewRPr().addNewShd();
+                                            cTShd.setVal(STShd.CLEAR);
+                                            cTShd.setColor("auto");
+                                            cTShd.setFill("FFFF9e");
+
+                                            picRun.addBreak(BreakType.PAGE);
+                                            picRun.setFontSize(14);
+                                            picRun.setText(curNum-1 + "-" + String.valueOf((char) (subNumber + 64)) + ") " + subHeader);
+
+                                            BufferedImage oldJpg;
+                                            XWPFPictureData pict = pic.get(k);
+                                            byte[] data = pict.getData();
+                                            oldJpg = ImageIO.read(new ByteArrayInputStream(data));
+                                            int w = oldJpg.getWidth();
+                                            int h = oldJpg.getHeight();
+                                            BufferedImage newJpg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                                            int[] rgb = oldJpg.getRGB(0,0,w,h,null,0,w);
+                                            newJpg.setRGB(0,0,w,h,rgb,0,w);;
+                                            File out = new File("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + k + ".jpg");
+                                            ImageIO.write(newJpg, "jpg", out);
+                                            picRun.addPicture(new FileInputStream("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgFile" + j + k + ".jpg"), XWPFDocument.PICTURE_TYPE_JPEG, subSheets.get(j), Units.toEMU(610), Units.toEMU(770));
+                                        }
                                     }
+
+
+
 
                                 } catch (Exception notFile) {
                                     System.err.println(notFile);
@@ -1017,8 +1359,10 @@ public class SubGenApp extends Application {
             if (empty || item == null) {
                 setGraphic(null);
             } else {
-                imageView.setImage(
-                        subSheetsImages.get(getListView().getItems().indexOf(item)));
+                System.out.println("Here's the ListView" + getListView().toString());
+                System.out.println("Here's the items" + getListView().getItems().toString());
+                System.out.println("Here's the item" + item);
+                imageView.setImage(subSheetsImages.get(getListView().getItems().indexOf(item)));
                 setGraphic(imageView);
             }
         }
