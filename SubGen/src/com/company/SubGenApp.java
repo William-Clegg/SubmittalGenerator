@@ -53,7 +53,7 @@ public class SubGenApp extends Application {
 
     private static List<byte[]> byteListRead = new ArrayList<byte[]>();
 
-    private static List<BufferedImage> buffList = new ArrayList<BufferedImage>();
+    private static List<Image> midList = new ArrayList<>();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -237,7 +237,7 @@ public class SubGenApp extends Application {
         hbBtn.getChildren().add(btn);
         grid.add(hbBtn, 1, 12);
 
-        Button loadLastInfo = new Button("Load Last");
+        Button loadLastInfo = new Button("Load Last Info");
         HBox loadLastInfoHB = new HBox(10);
         loadLastInfoHB.setAlignment(Pos.BOTTOM_LEFT);
         loadLastInfoHB.getChildren().add(loadLastInfo);
@@ -282,6 +282,57 @@ public class SubGenApp extends Application {
             genConAdd1 = gAdd1.getText();
             genConAdd2 = gAdd2.getText();
             genConPhone = gcPhoneField.getText();
+
+        });
+
+        Button loadLastList = new Button("Load Last List");
+        HBox loadLastListHB = new HBox(10);
+        loadLastListHB.setAlignment(Pos.BOTTOM_LEFT);
+        loadLastListHB.getChildren().add(loadLastList);
+        grid.add(loadLastListHB, 0, 13);
+
+        loadLastList.setOnAction(e -> {
+            try {
+                FileInputStream fis = new FileInputStream("Objectsavefile1.ser");
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                List<String> loadSubList = (List<String>) ois.readObject();
+                subSheets = FXCollections.observableList(loadSubList);
+                System.out.println("The list of Strings " + subSheets.toString());
+                ois.close();
+
+
+                FileInputStream fis2 = new FileInputStream("Objectsavefile2.ser");
+                ObjectInputStream ois2 = new ObjectInputStream(fis2);
+                byteListRead = (List<byte[]>) ois2.readObject();
+                for (int z = 0; z < byteListRead.size(); z++) {
+                    InputStream in = new ByteArrayInputStream(byteListRead.get(z));
+                    BufferedImage buffIm = ImageIO.read(in);
+                    midList.add(SwingFXUtils.toFXImage(buffIm,null));
+                    if (z == 0) {
+                        subSheetsImages.clear();
+                    }
+                    subSheetsImages = FXCollections.observableList(midList);
+                    File outFile = new File("C:\\Users\\Rudy\\IdeaProjects\\SubGen\\tempImages\\imgTest" + z + ".png");
+                    ImageIO.write(buffIm, "png", outFile);
+                    in.close();
+                }
+                for(int i = 0; i < subSheetsImages.size(); i++) {
+                    BufferedImage serImage = SwingFXUtils.fromFXImage(subSheetsImages.get(i), null);
+                    ByteArrayOutputStream s = new ByteArrayOutputStream();
+                    ImageIO.write(serImage, "png", s);
+                    byte[] res  = s.toByteArray();
+                    byteList.add(res);
+                    s.close();
+                }
+
+
+
+
+            } catch (IOException savedInfoLoadE) {
+                savedInfoLoadE.printStackTrace();
+            } catch (ClassNotFoundException noClass) {
+                noClass.printStackTrace();
+            }
 
         });
 
@@ -355,44 +406,10 @@ public class SubGenApp extends Application {
         Button addSub = new Button();
         addSub.setText("Add Sub Category");
 
-        Button loadLastList = new Button("Load Last");
-        HBox loadLastListHB = new HBox(10);
-        loadLastListHB.setAlignment(Pos.BOTTOM_LEFT);
-        loadLastListHB.getChildren().add(loadLastList);
-        grid.add(loadLastListHB, 0, 12);
-
         ListView<String> fileListView = new ListView<>(subSheets);
 
-        loadLastList.setOnAction(e -> {
-            try {
-                FileInputStream fis = new FileInputStream("Objectsavefile1.ser");
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                List<String> loadSubList = (List<String>) ois.readObject();
-                subSheets = FXCollections.observableList(loadSubList);
-                ois.close();
 
 
-                FileInputStream fis2 = new FileInputStream("Objectsavefile2.ser");
-                ObjectInputStream ois2 = new ObjectInputStream(fis2);
-                byteListRead = (List<byte[]>) ois2.readObject();
-                for (int z = 0; z < byteListRead.size(); z++) {
-                    InputStream in = new ByteArrayInputStream(byteListRead.get(z));
-                    BufferedImage buffIm = ImageIO.read(in);
-                    subSheetsImages.clear();
-                    subSheetsImages.add(SwingFXUtils.toFXImage(buffIm,null));
-                    File outFile = new File("imageTest" + z);
-                    ImageIO.write(buffIm, "jpg", outFile);
-                }
-                createScene1();
-
-
-            } catch (IOException savedInfoLoadE) {
-                savedInfoLoadE.printStackTrace();
-            } catch (ClassNotFoundException noClass) {
-                noClass.printStackTrace();
-            }
-
-        });
 
         grid.add(mainCatLabel, 0, 1);
         grid.add(subCatLabel, 1, 1);
@@ -449,7 +466,7 @@ public class SubGenApp extends Application {
             String spaces = "";
             Text t;
             if (!subCatField.getText().isEmpty()  && !subSheets.contains("  " + subCatField.getText())) {
-                t = new Text("  " + subCatField.getText());
+                t = new Text("    " + subCatField.getText());
                 subSheetsImages.add(t.snapshot(null, null));
                 subSheets.add("  " + subCatField.getText());
                 System.out.println(subSheets);
@@ -610,7 +627,7 @@ public class SubGenApp extends Application {
                     for (File file : db.getFiles()) {
                         if(!subSheets.contains("    " + file.getAbsolutePath())) {
                             filePath = "    " + file.getAbsolutePath();
-                            Text t = new Text(filePath);
+                            Text t = new Text("        " + filePath.substring(filePath.lastIndexOf('\\') + 1,filePath.lastIndexOf('.')));
                             subSheetsImages.add(t.snapshot(null, null));
                             subSheets.add(filePath);
                             System.out.println(subSheets);
@@ -707,7 +724,7 @@ public class SubGenApp extends Application {
                 r.getCTR().insertNewBr(1);
                 r.getCTR().insertNewBr(1);
                 r.addPicture(new FileInputStream(imgFile), format, imgFile, Units.toEMU(480), Units.toEMU(222));
-                p.setIndentationLeft(620);
+                p.setIndentationLeft(660);
             } catch (Exception a) {
                 System.err.println(a);
             }
@@ -1269,6 +1286,7 @@ public class SubGenApp extends Application {
     private class FileCell extends ListCell<String> {
         private final ImageView imageView = new ImageView();
 
+
         public FileCell() {
             ListCell<String> thisCell = this;
 
@@ -1320,12 +1338,54 @@ public class SubGenApp extends Application {
             });
 
             setOnDragDropped(event -> {
-                if (getItem() == null) {
-                    return;
-                }
-
                 Dragboard db = event.getDragboard();
                 boolean success = false;
+                if (getItem() == null) {
+                    ObservableList<String> items = getListView().getItems();
+                    int draggedIdx = items.indexOf(db.getString());
+                    int thisIdx = items.size()-1;
+                    Image temp = subSheetsImages.get(draggedIdx);
+                    for(int i = draggedIdx + 1; i < items.size(); i++) {
+                        subSheetsImages.set((draggedIdx + (i - (draggedIdx + 1))), subSheetsImages.get(i));
+
+                        items.set(draggedIdx + (i - (draggedIdx + 1)), items.get(i));
+
+                    }
+                    subSheetsImages.set(thisIdx, temp);
+                    items.set(thisIdx, db.getString());
+                    List<String> itemscopy = new ArrayList<>(getListView().getItems());
+                    getListView().getItems().setAll(itemscopy);
+                    success = true;
+                    /*
+                    try {
+                        FileOutputStream fosDropped = new FileOutputStream("Objectsavefile1.ser");
+                        ObjectOutputStream oosDropped = new ObjectOutputStream(fosDropped);
+                        oosDropped.writeObject(new ArrayList<String>(subSheets));
+                        oosDropped.close();
+
+                        BufferedImage serImage = SwingFXUtils.fromFXImage(t.snapshot(null,null), null);
+                        ByteArrayOutputStream s = new ByteArrayOutputStream();
+                        ImageIO.write(serImage, "png", s);
+                        byte[] res  = s.toByteArray();
+                        byteList.add(res);
+                        s.close();
+                        FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
+                        ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
+                        oosMain2.writeObject(byteList);
+                        oosMain2.close();
+
+
+                    } catch (FileNotFoundException mainSave) {
+                        mainSave.printStackTrace();
+                    } catch (IOException mainSave) {
+                        mainSave.printStackTrace();
+                    }
+                    */
+
+                    event.setDropCompleted(success);
+
+                    event.consume();
+                }
 
                 if (db.hasString()) {
                     ObservableList<String> items = getListView().getItems();
