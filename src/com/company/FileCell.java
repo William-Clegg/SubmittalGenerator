@@ -15,10 +15,23 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.company.AutoSave.bottomDragSave;
+import static com.company.AutoSave.listSwapSave;
 import static com.company.SubGenApp.byteList;
 import static com.company.SubGenApp.subSheets;
 import static com.company.SubGenApp.subSheetsImages;
 
+/*---------------------------------------------------------------------------
+ *  Class which allows swapping of the items in the list as images of text
+ *  in an ImageView.
+ *
+ *  This was the first way I got it to work and maintaining the ImageView
+ *  is now ingrained throughout the code. It would be much better to treat
+ *  it as text since that is all that is necessary. Would likely save minimal
+ *  processing time but many lines of code and would get rid of the background
+ *  color mismatch caused with the ImageView.
+ */
 
 public class FileCell extends ListCell<String> {
     private final ImageView imageView = new ImageView();
@@ -39,13 +52,7 @@ public class FileCell extends ListCell<String> {
             Dragboard dragboard = startDragAndDrop(TransferMode.MOVE);
             ClipboardContent content = new ClipboardContent();
             content.putString(getItem());
-            dragboard.setDragView(
-                    subSheetsImages.get(
-                            items.indexOf(
-                                    getItem()
-                            )
-                    )
-            );
+            dragboard.setDragView(subSheetsImages.get(items.indexOf(getItem())));
             dragboard.setContent(content);
 
             event.consume();
@@ -75,55 +82,33 @@ public class FileCell extends ListCell<String> {
         });
 
         setOnDragDropped(event -> {
+
             Dragboard db = event.getDragboard();
             boolean success = false;
+
             if (getItem() == null) {
-                //ObservableList<String> items = getListView().getItems();
+
                 int draggedIdx = subSheets.indexOf(db.getString());
                 int thisIdx = subSheets.size()-1;
                 Image temp = subSheetsImages.get(draggedIdx);
-                String temp1 = subSheets.get(draggedIdx);
                 System.out.println("SUBSHEETS BEFORE DRAG " + subSheets.toString());
+
                 for(int i = draggedIdx + 1; i < subSheets.size(); i++) {
+
                     subSheetsImages.set((draggedIdx + (i - (draggedIdx + 1))), subSheetsImages.get(i));
-                    //subSheets.set((draggedIdx + (i - (draggedIdx + 1))), subSheets.get(i));
-
                     subSheets.set(draggedIdx + (i - (draggedIdx + 1)), subSheets.get(i));
-
                 }
+
                 subSheetsImages.set(thisIdx, temp);
                 subSheets.set(thisIdx, db.getString());
                 List<String> itemscopy = new ArrayList<>(getListView().getItems());
                 getListView().getItems().setAll(itemscopy);
-                //subSheets.set(thisIdx, temp1);
                 success = true;
-
                 System.out.println("SUBSHEETS AFTER DRAG " + subSheets.toString());
-                try {
-                    FileOutputStream fosDropped = new FileOutputStream("Objectsavefile1.ser");
-                    ObjectOutputStream oosDropped = new ObjectOutputStream(fosDropped);
-                    oosDropped.writeObject(new ArrayList<String>(subSheets));
-                    oosDropped.close();
 
-
-                    byte[] tempArr = byteList.get(draggedIdx);
-                    byteList.set(draggedIdx, byteList.get(thisIdx));
-                    byteList.set(thisIdx, tempArr);
-                    FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
-                    ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
-                    oosMain2.writeObject(byteList);
-                    oosMain2.close();
-
-
-                } catch (FileNotFoundException mainSave) {
-                    mainSave.printStackTrace();
-                } catch (IOException mainSave) {
-                    mainSave.printStackTrace();
-                }
-
+                bottomDragSave(draggedIdx, thisIdx);
 
                 event.setDropCompleted(success);
-
                 event.consume();
             }
 
@@ -132,35 +117,16 @@ public class FileCell extends ListCell<String> {
                 int draggedIdx = items.indexOf(db.getString());
                 int thisIdx = items.indexOf(getItem());
 
-                String itemTemp = items.get(thisIdx);
                 String itemTemp2 = items.get(draggedIdx);
 
-                byte[] tempArr = byteList.get(thisIdx);
                 byte[] tempArr2 = byteList.get(draggedIdx);
 
-                Image temp = subSheetsImages.get(thisIdx);
                 Image temp2 = subSheetsImages.get(draggedIdx);
-                //subSheetsImages.set(draggedIdx, subSheetsImages.get(thisIdx));
+
 
                 if(draggedIdx > thisIdx) { //if the item is dragged up
-                    //subSheetsImages.set(thisIdx, subSheetsImages.get(draggedIdx));
-                    //byteList.set(thisIdx, byteList.get(draggedIdx));
-                    //items.set(thisIdx, items.get(draggedIdx));
+
                     for(int i = 0; i <= draggedIdx - thisIdx; i += 1) {
-                        /*temp2 = subSheetsImages.get(i);
-                        subSheetsImages.set(i, temp);
-                        temp = subSheetsImages.get(i+1);
-                        subSheetsImages.set(i+1, temp2);
-
-                        tempArr2 = byteList.get(i);
-                        byteList.set(i, tempArr);
-                        tempArr = byteList.get(i+1);
-                        byteList.set(i+1, tempArr2);
-
-                        itemTemp2 = items.get(i);
-                        items.set(i, itemTemp);
-                        itemTemp = items.get(i+1);
-                        items.set(i+1, itemTemp2);*/
 
                         if(draggedIdx - (i) == thisIdx) {
                             subSheetsImages.set(thisIdx, temp2);
@@ -181,8 +147,7 @@ public class FileCell extends ListCell<String> {
                         }
                     }
                 } else { //if item is dragged down
-                    //subSheetsImages.set(thisIdx - 1, subSheetsImages.get(draggedIdx));
-                    //items.set(thisIdx - 1, items.get(draggedIdx));
+
                     for(int i = 0; i < thisIdx - draggedIdx; i += 1) {
                         if(i + draggedIdx == thisIdx - 1) {
                             subSheetsImages.set(thisIdx - 1, temp2);
@@ -209,23 +174,7 @@ public class FileCell extends ListCell<String> {
 
                 success = true;
 
-                try {
-                    FileOutputStream fosDropped = new FileOutputStream("Objectsavefile1.ser");
-                    ObjectOutputStream oosDropped = new ObjectOutputStream(fosDropped);
-                    oosDropped.writeObject(new ArrayList<String>(subSheets));
-                    oosDropped.close();
-
-                    FileOutputStream fosMain2 = new FileOutputStream("Objectsavefile2.ser");
-                    ObjectOutputStream oosMain2 = new ObjectOutputStream(fosMain2);
-                    oosMain2.writeObject(byteList);
-                    oosMain2.close();
-
-
-                } catch (FileNotFoundException mainSave) {
-                    mainSave.printStackTrace();
-                } catch (IOException mainSave) {
-                    mainSave.printStackTrace();
-                }
+                listSwapSave();
             }
             event.setDropCompleted(success);
 
